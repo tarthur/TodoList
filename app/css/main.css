@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css?family=Cabin');
+
+header {
+    font-family: 'Cabin', sans-serif;
+    letter-spacing: .1em;
+    font-size: 20px;
+    color: rgb(248, 248, 248);
+    padding: 25px 0;
+    margin: 0 0 30px 0;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+    background: url(../img/crossword.png);
+}
+
+header h1 {
+    margin: 15px 0;
+    text-shadow: 1px 1px 1px rgb(200, 200, 200); 
+}
+
+.todo-wrap {
+    display: flex;
+    justify-content: center;
+}
+
+.todo-2 {
+    margin-left: 5%;
+}

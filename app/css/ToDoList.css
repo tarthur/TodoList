@@ -1,0 +1,23 @@
+.todo-form__input {
+    box-sizing: border-box;
+    height: 26px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding:20px;
+    min-width: 300px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, .1);
+    /*outline: none;*/
+}
+
+.todo-form__btn {
+    display: inline-block;
+    border: 0;
+    border-radius: 5px;
+    color: #fff;
+    padding: 13px;
+    outline: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    background: #4285f4;
+  }
