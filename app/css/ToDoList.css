@@ -1,23 +1,62 @@
 .todo-form__input {
     box-sizing: border-box;
     height: 26px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    padding:20px;
-    min-width: 300px;
-    box-shadow: 1px 1px 5px rgba(0, 0, 0, .1);
-    /*outline: none;*/
+    border: 1px solid #e8e8e8;
+    padding: 21px 15px 19px 14px;
+    min-width: 225px;
 }
 
 .todo-form__btn {
     display: inline-block;
-    border: 0;
-    border-radius: 5px;
-    color: #fff;
-    padding: 13px;
+    background: url(../img/plus-symbol.svg) no-repeat 50%;
+    padding: 20px;
+    background-size: 20px 100%;
+    margin-left: 10px;
+    border: 1px solid #e8e8e8;
     outline: none;
     cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    background: #4285f4;
-  }
+    width: 16px;
+    height: 16px;
+    opacity: .8;
+}
+
+.todo-form__btn:hover {
+    opacity: 1;
+    transition: opacity ease-out .7s;
+}
+
+.todo {
+    opacity: 0;
+    background: #fff;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, .1);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, .1);
+}
+
+.todo.visible {
+    opacity: 1;
+    transition: opacity ease-out .7s;
+}
+
+.todo-form {
+    display: flex;
+    align-items: center;
+}
+
+.todo-form__delete-btn {
+    background: #7fccea;
+    color: #fff;
+    border: 1px solid #eee;
+    margin-right: 10px;
+    padding: 0 10px;
+    border-radius: 3px;
+    height: 40px;
+    outline: none;
+    cursor: pointer;
+}
+
+.todo-form__delete-btn:hover {
+    background: #06a3df;
+}

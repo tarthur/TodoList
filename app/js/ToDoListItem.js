@@ -15,14 +15,26 @@ export class ToDoListItem {
         this.closeBtn = document.createElement('i');
         
         this.state = {
-            itemBox : this.itemBox,
             checkbox : false,
             input : this.inputValue,
             closeBtn : false
         }
 
+        this.init();
+    }
+
+    init() {
+        this.checkbox.type = 'checkbox';
+        this.checkbox.classList.add('todo-item__checkbox');
+        this.itemBox.classList.add('todo-item');
+        this.input.classList.add('todo-item__input');
+        this.closeBtn.classList.add('todo-item__close-icon');
+        this.itemBox.appendChild(this.checkbox);
+        this.input.value = this.inputValue;
+        this.itemBox.appendChild(this.input);
+        this.itemBox.appendChild(this.closeBtn);
+        
         this.initEvents();
-        this.createTodoItem();
     }
 
     initEvents() {
@@ -31,11 +43,11 @@ export class ToDoListItem {
         this.input.addEventListener('input', (e) => { this.onInputEntryField(e) });
     }
 
-    onChangedState(act) {
+    onChangedState(action) {
         let event = new CustomEvent("changeTodoItemState", {
             bubbles: true,
             detail: {
-                act : act,
+                action : action,
                 state : this.state
             }
         });
@@ -48,32 +60,22 @@ export class ToDoListItem {
         this.onChangedState('changed');
     }
 
-    onClickCloseIcon(e) {
-        e.target.parentNode.remove();
+    onClickCloseIcon(e, rootElem) {
+        if (!rootElem) {
+            e.target.parentNode.remove();
+        } else {
+            rootElem.remove();
+        }
+
         this.state.closeBtn = !this.state.closeBtn;
         this.onChangedState('deleted');
     }
 
-    onClickCheckbox({ target }) {
+    onClickCheckbox(e) {
         this.toggleCompleted();
+        
         this.state.checkbox = !this.state.checkbox;
         this.onChangedState('finished');
-    }
-
-    createTodoItem() {
-        this.checkbox.type = 'checkbox';
-        this.checkbox.classList.add('todo-item__checkbox');
-        this.itemBox.classList.add('todo-item');
-        this.input.classList.add('todo-item__input');
-        this.closeBtn.classList.add('todo-item__close-icon');
-        this.itemBox.appendChild(this.checkbox);
-        this.input.value = this.inputValue;
-        this.itemBox.appendChild(this.input);
-        this.itemBox.appendChild(this.closeBtn);
-    }
-
-    getState() {
-        return this.state;
     }
 
     toggleCompleted() {

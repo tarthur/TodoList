@@ -1,5 +1,6 @@
 import { ToDoListItem } from "./ToDoListItem.js";
 
+
 /**
  * @param {HTML any block blement} todoBox
  * @param {HTMLFormElement} form
@@ -9,11 +10,12 @@ import { ToDoListItem } from "./ToDoListItem.js";
  * @param {Array} itemsBox
  */
 export class ToDoList {
-    constructor(rootElement) {
-        this.todoBox = rootElement;
-        this.form = this.todoBox.querySelector('.todo-form');
-        this.formInput = this.todoBox.querySelector('.todo-form__input');
-        this.formButton = this.todoBox.querySelector('.todo-form__btn');
+    constructor() {
+        this.todoBox = document.createElement('div');
+        this.form = document.createElement('form');
+        this.formInput = document.createElement('input');
+        this.formButton = document.createElement('button');
+        this.formDeleteAllButton = document.createElement('button');
         this.itemsBox = document.createElement('ul');
         this.listItems = [];
 
@@ -22,66 +24,95 @@ export class ToDoList {
 
     init() {
         this.todoBox.classList.add('todo');
+
+        this.form.classList.add('todo-form');
+        this.formInput.classList.add('todo-form__input');
+        this.formInput.type = 'text';
+        this.formInput.placeholder = 'What needs to be done?...';
+        this.formButton.classList.add('todo-form__btn');
+        this.formDeleteAllButton.classList.add('todo-form__delete-btn')
+        this.formDeleteAllButton.innerHTML = 'Delete All';
+
         this.itemsBox.classList.add('todo__items-box');
+
+        this.form.appendChild(this.formDeleteAllButton);
+        this.form.appendChild(this.formInput);
+        this.form.appendChild(this.formButton);
+        this.todoBox.appendChild(this.form);
         this.todoBox.appendChild(this.itemsBox);
 
+        this.initEvents();
+    }
+
+    initEvents() {
         this.formButton.addEventListener('click', (e) => { this.onClickButtonForm(e) });
+        this.formDeleteAllButton.addEventListener('click', (e) => { this.onClickDeleteAllButton(e) });
+    }
+
+    onClickDeleteAllButton(e) {
+        e.preventDefault();
+
+        if (!this.isEmptyArray()) {
+            let l = this.listItems.length;
+
+            for (let i = (l - 1); i >= 0; i--) {
+                this.listItems[i].onClickCloseIcon(null, this.listItems[i].itemBox);
+            }
+        }
     }
 
     onClickButtonForm(e) {
-        e.preventDefault()
+        e.preventDefault();
 
         if (this.isEmptyInput()) {
             return alert('Введите текст');
         }
-
-        if (this.isIdenticalItem(this.getInputValue())) {
-            return alert('Такая задача уже есть');
-        }
-
+        
         this.addTodoItem();
     }
 
     addTodoItem() {
-        const elem = this.createTodoItem();
-        this.listItems.push(elem);
-        this.itemsBox.appendChild(elem.itemBox);
+        const item = this.createTodoItem();
+
+        this.listItems.push(item);
+        this.itemsBox.appendChild(item.itemBox);
     }
 
     createTodoItem(value) {
-        let currentItemState = new ToDoListItem(this.getInputValue()).getState();
-        currentItemState.itemBox.addEventListener('changeTodoItemState', (e) => { this.onChangedTodoState(e) });
-        return currentItemState;
+        const item = new ToDoListItem(this.getInputValue());
+        item.itemBox.addEventListener('changeTodoItemState', (e) => { this.onChangedTodoState(e, item) });
+
+        return item;
     }
 
-    onChangedTodoState(e) {
-        switch (e.detail.act) {
+    onChangedTodoState(e, item) {
+        switch (e.detail.action) {
             case 'finished':
-                this.finishedItem(e);
+                this.finishedItem(e, item);
                 break;
             case 'changed':
-                this.changedItem(e);
+                this.changedItem(e, item);
                 break;
             case 'deleted':
-                this.deleteItem(e);
+                this.deleteItem(e, item);
                 break;
         }
     }
 
-    deleteItem(e) {
-        this.listItems.forEach((item, i) => {
-            if (item === e.detail.state) {
+    deleteItem(e, item) {
+        this.listItems.forEach((arrayItem, i) => {
+            if (arrayItem === item) {
                 return this.listItems.splice(i, 1);
             }
         })
     }
 
-    changedItem(e) {
-        console.log('changedItem');
+    changedItem(e, item) {
+        console.log(`finishedItem. ToDoListItem.state: ${item.state.input}`);
     }
-    
-    finishedItem(e) {
-        console.log('finishedItem');
+
+    finishedItem(e, item) {
+        console.log(`finishedItem. ToDoListItem.state: ${item.state.checkbox}`);
     }
 
     getInputValue() {
@@ -92,10 +123,15 @@ export class ToDoList {
         return this.getInputValue() === '';
     }
 
-    isIdenticalItem(value) {
-        for (let i = 0; i < this.listItems.length; i++) {
-            if (this.listItems[i].input === value) return true;
-        }
+    isEmptyArray() {
+        return this.listItems.length === 0;
+    }
 
+    getTodoList() {
+        return this.todoBox;
+    }
+
+    getVisible() {
+        this.todoBox.classList.add('visible');
     }
 }

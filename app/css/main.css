@@ -1,27 +1,63 @@
+@import url('https://necolas.github.io/normalize.css/7.0.0/normalize.css');
 @import url('https://fonts.googleapis.com/css?family=Cabin');
 
+
+body {
+    background: #f8f8f8;
+}
+
 header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
     font-family: 'Cabin', sans-serif;
     letter-spacing: .1em;
     font-size: 20px;
-    color: rgb(248, 248, 248);
-    padding: 25px 0;
+    padding: 30px 0 50px;
     margin: 0 0 30px 0;
     border-bottom: 1px solid #eee;
     text-align: center;
-    background: url(../img/crossword.png);
+    background: #414141 url(../img/cross-stripes.png);
 }
 
 header h1 {
-    margin: 15px 0;
-    text-shadow: 1px 1px 1px rgb(200, 200, 200); 
+    color: rgb(149, 149, 149);
+    font-size: 60px;
+    margin: 0px 0 20px;
 }
 
 .todo-wrap {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    align-items: flex-start;
+    padding: 0 25px;
 }
 
 .todo-2 {
     margin-left: 5%;
+}
+
+
+
+
+
+
+/*theme2*/
+/*#45919c*/
+.list-builder-wrap button {
+    background-color: #a93f41 !important;
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, .2);
+}
+.list-builder-wrap button:hover {
+    background-color: #ba4f50 !important;
+}
+
+.todo-form__delete-btn {
+    background: #44a1ae !important; 
+}
+
+.todo-form__delete-btn:hover {
+    background: #49b4c3 !important;
 }

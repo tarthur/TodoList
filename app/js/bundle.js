@@ -4,6 +4,62 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.ToDoBuilder = undefined;
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _ToDoList = require('./ToDoList.js');
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @param {HTMLButtonElement} btn
+ */
+var ToDoBuilder = exports.ToDoBuilder = function () {
+    function ToDoBuilder(btn) {
+        _classCallCheck(this, ToDoBuilder);
+
+        this.btn = btn;
+        this.result = document.getElementById('result');
+
+        this.init();
+    }
+
+    _createClass(ToDoBuilder, [{
+        key: 'init',
+        value: function init() {
+            var _this = this;
+
+            this.addTodoList();
+            this.btn.addEventListener('click', function (e) {
+                _this.onClickBtn(e);
+            });
+        }
+    }, {
+        key: 'onClickBtn',
+        value: function onClickBtn(e) {
+            this.addTodoList();
+        }
+    }, {
+        key: 'addTodoList',
+        value: function addTodoList() {
+            var todoList = new _ToDoList.ToDoList();
+            this.result.appendChild(todoList.getTodoList());
+            setTimeout(function () {
+                todoList.getVisible();
+            }, 10);
+        }
+    }]);
+
+    return ToDoBuilder;
+}();
+
+},{"./ToDoList.js":2}],2:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 exports.ToDoList = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -21,13 +77,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @param {Array} itemsBox
  */
 var ToDoList = exports.ToDoList = function () {
-    function ToDoList(rootElement) {
+    function ToDoList() {
         _classCallCheck(this, ToDoList);
 
-        this.todoBox = rootElement;
-        this.form = this.todoBox.querySelector('.todo-form');
-        this.formInput = this.todoBox.querySelector('.todo-form__input');
-        this.formButton = this.todoBox.querySelector('.todo-form__btn');
+        this.todoBox = document.createElement('div');
+        this.form = document.createElement('form');
+        this.formInput = document.createElement('input');
+        this.formButton = document.createElement('button');
+        this.formDeleteAllButton = document.createElement('button');
         this.itemsBox = document.createElement('ul');
         this.listItems = [];
 
@@ -37,15 +94,50 @@ var ToDoList = exports.ToDoList = function () {
     _createClass(ToDoList, [{
         key: 'init',
         value: function init() {
-            var _this = this;
-
             this.todoBox.classList.add('todo');
+
+            this.form.classList.add('todo-form');
+            this.formInput.classList.add('todo-form__input');
+            this.formInput.type = 'text';
+            this.formInput.placeholder = 'What needs to be done?...';
+            this.formButton.classList.add('todo-form__btn');
+            this.formDeleteAllButton.classList.add('todo-form__delete-btn');
+            this.formDeleteAllButton.innerHTML = 'Delete All';
+
             this.itemsBox.classList.add('todo__items-box');
+
+            this.form.appendChild(this.formDeleteAllButton);
+            this.form.appendChild(this.formInput);
+            this.form.appendChild(this.formButton);
+            this.todoBox.appendChild(this.form);
             this.todoBox.appendChild(this.itemsBox);
+
+            this.initEvents();
+        }
+    }, {
+        key: 'initEvents',
+        value: function initEvents() {
+            var _this = this;
 
             this.formButton.addEventListener('click', function (e) {
                 _this.onClickButtonForm(e);
             });
+            this.formDeleteAllButton.addEventListener('click', function (e) {
+                _this.onClickDeleteAllButton(e);
+            });
+        }
+    }, {
+        key: 'onClickDeleteAllButton',
+        value: function onClickDeleteAllButton(e) {
+            e.preventDefault();
+
+            if (!this.isEmptyArray()) {
+                var l = this.listItems.length;
+
+                for (var i = l - 1; i >= 0; i--) {
+                    this.listItems[i].onClickCloseIcon(null, this.listItems[i].itemBox);
+                }
+            }
         }
     }, {
         key: 'onClickButtonForm',
@@ -56,65 +148,63 @@ var ToDoList = exports.ToDoList = function () {
                 return alert('Введите текст');
             }
 
-            if (this.isIdenticalItem(this.getInputValue())) {
-                return alert('Такая задача уже есть');
-            }
-
             this.addTodoItem();
         }
     }, {
         key: 'addTodoItem',
         value: function addTodoItem() {
-            var elem = this.createTodoItem();
-            this.listItems.push(elem);
-            this.itemsBox.appendChild(elem.itemBox);
+            var item = this.createTodoItem();
+
+            this.listItems.push(item);
+            this.itemsBox.appendChild(item.itemBox);
         }
     }, {
         key: 'createTodoItem',
         value: function createTodoItem(value) {
             var _this2 = this;
 
-            var currentItemState = new _ToDoListItem.ToDoListItem(this.getInputValue()).getState();
-            currentItemState.itemBox.addEventListener('changeTodoItemState', function (e) {
-                _this2.onChangedTodoState(e);
+            var item = new _ToDoListItem.ToDoListItem(this.getInputValue());
+            item.itemBox.addEventListener('changeTodoItemState', function (e) {
+                _this2.onChangedTodoState(e, item);
             });
-            return currentItemState;
+
+            return item;
         }
     }, {
         key: 'onChangedTodoState',
-        value: function onChangedTodoState(e) {
-            switch (e.detail.act) {
+        value: function onChangedTodoState(e, item) {
+            switch (e.detail.action) {
                 case 'finished':
-                    this.finishedItem(e);
+                    this.finishedItem(e, item);
                     break;
                 case 'changed':
-                    this.changedItem(e);
+                    this.changedItem(e, item);
                     break;
                 case 'deleted':
-                    this.deleteItem(e);
+                    this.deleteItem(e, item);
                     break;
             }
         }
     }, {
         key: 'deleteItem',
-        value: function deleteItem(e) {
+        value: function deleteItem(e, item) {
             var _this3 = this;
 
-            this.listItems.forEach(function (item, i) {
-                if (item === e.detail.state) {
+            this.listItems.forEach(function (arrayItem, i) {
+                if (arrayItem === item) {
                     return _this3.listItems.splice(i, 1);
                 }
             });
         }
     }, {
         key: 'changedItem',
-        value: function changedItem(e) {
-            console.log('changedItem');
+        value: function changedItem(e, item) {
+            console.log('finishedItem. ToDoListItem.state: ' + item.state.input);
         }
     }, {
         key: 'finishedItem',
-        value: function finishedItem(e) {
-            console.log('finishedItem');
+        value: function finishedItem(e, item) {
+            console.log('finishedItem. ToDoListItem.state: ' + item.state.checkbox);
         }
     }, {
         key: 'getInputValue',
@@ -127,18 +217,26 @@ var ToDoList = exports.ToDoList = function () {
             return this.getInputValue() === '';
         }
     }, {
-        key: 'isIdenticalItem',
-        value: function isIdenticalItem(value) {
-            for (var i = 0; i < this.listItems.length; i++) {
-                if (this.listItems[i].input === value) return true;
-            }
+        key: 'isEmptyArray',
+        value: function isEmptyArray() {
+            return this.listItems.length === 0;
+        }
+    }, {
+        key: 'getTodoList',
+        value: function getTodoList() {
+            return this.todoBox;
+        }
+    }, {
+        key: 'getVisible',
+        value: function getVisible() {
+            this.todoBox.classList.add('visible');
         }
     }]);
 
     return ToDoList;
 }();
 
-},{"./ToDoListItem.js":2}],2:[function(require,module,exports){
+},{"./ToDoListItem.js":3}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -168,17 +266,30 @@ var ToDoListItem = exports.ToDoListItem = function () {
         this.closeBtn = document.createElement('i');
 
         this.state = {
-            itemBox: this.itemBox,
             checkbox: false,
             input: this.inputValue,
             closeBtn: false
         };
 
-        this.initEvents();
-        this.createTodoItem();
+        this.init();
     }
 
     _createClass(ToDoListItem, [{
+        key: 'init',
+        value: function init() {
+            this.checkbox.type = 'checkbox';
+            this.checkbox.classList.add('todo-item__checkbox');
+            this.itemBox.classList.add('todo-item');
+            this.input.classList.add('todo-item__input');
+            this.closeBtn.classList.add('todo-item__close-icon');
+            this.itemBox.appendChild(this.checkbox);
+            this.input.value = this.inputValue;
+            this.itemBox.appendChild(this.input);
+            this.itemBox.appendChild(this.closeBtn);
+
+            this.initEvents();
+        }
+    }, {
         key: 'initEvents',
         value: function initEvents() {
             var _this = this;
@@ -195,11 +306,11 @@ var ToDoListItem = exports.ToDoListItem = function () {
         }
     }, {
         key: 'onChangedState',
-        value: function onChangedState(act) {
+        value: function onChangedState(action) {
             var event = new CustomEvent("changeTodoItemState", {
                 bubbles: true,
                 detail: {
-                    act: act,
+                    action: action,
                     state: this.state
                 }
             });
@@ -214,37 +325,23 @@ var ToDoListItem = exports.ToDoListItem = function () {
         }
     }, {
         key: 'onClickCloseIcon',
-        value: function onClickCloseIcon(e) {
-            e.target.parentNode.remove();
+        value: function onClickCloseIcon(e, rootElem) {
+            if (!rootElem) {
+                e.target.parentNode.remove();
+            } else {
+                rootElem.remove();
+            }
+
             this.state.closeBtn = !this.state.closeBtn;
             this.onChangedState('deleted');
         }
     }, {
         key: 'onClickCheckbox',
-        value: function onClickCheckbox(_ref) {
-            var target = _ref.target;
-
+        value: function onClickCheckbox(e) {
             this.toggleCompleted();
+
             this.state.checkbox = !this.state.checkbox;
             this.onChangedState('finished');
-        }
-    }, {
-        key: 'createTodoItem',
-        value: function createTodoItem() {
-            this.checkbox.type = 'checkbox';
-            this.checkbox.classList.add('todo-item__checkbox');
-            this.itemBox.classList.add('todo-item');
-            this.input.classList.add('todo-item__input');
-            this.closeBtn.classList.add('todo-item__close-icon');
-            this.itemBox.appendChild(this.checkbox);
-            this.input.value = this.inputValue;
-            this.itemBox.appendChild(this.input);
-            this.itemBox.appendChild(this.closeBtn);
-        }
-    }, {
-        key: 'getState',
-        value: function getState() {
-            return this.state;
         }
     }, {
         key: 'toggleCompleted',
@@ -256,15 +353,12 @@ var ToDoListItem = exports.ToDoListItem = function () {
     return ToDoListItem;
 }();
 
-},{}],3:[function(require,module,exports){
-'use strict';
+},{}],4:[function(require,module,exports){
+"use strict";
 
-var _ToDoList = require('./ToDoList.js');
+var _ToDoBuilder = require("./ToDoBuilder.js");
 
-var todo_1 = document.getElementById('todo-1');
-var todo1 = new _ToDoList.ToDoList(todo_1);
+var listBuilder = document.getElementById('listBuilder');
+var todoBuilder = new _ToDoBuilder.ToDoBuilder(listBuilder);
 
-var todo_2 = document.getElementById('todo-2');
-var todo2 = new _ToDoList.ToDoList(todo_2);
-
-},{"./ToDoList.js":1}]},{},[3]);
+},{"./ToDoBuilder.js":1}]},{},[4]);

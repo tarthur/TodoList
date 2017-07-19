@@ -16,5 +16,5 @@ gulp.task('es6', () => {
 });
 
 gulp.task('default', ['es6'],() => {
-	gulp.watch('app/js/*.js',['es6'])
+	gulp.watch('app/js/*.js', ['es6'])
 });

@@ -1,19 +1,27 @@
 .todo__items-box {
     margin: 0; padding: 0;
-    margin-top: 10px;
 }
 
 .todo-item {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     list-style-type: none;
-    padding: 10px 24px;
+    padding: 15px 10px;
     border-bottom: 1px solid #eee;
+}
+
+.todo-item:last-child {
+    border-bottom: none;
+}
+
+.todo-item:first-child {
+    margin-top: 15px;
 }
 
 .todo-item.completed .todo-item__input {
     text-decoration: line-through;
-    color: rgba(234, 40, 40, .7);
+    color: rgba(149, 149, 149, .7);
 }
 
 .todo-item__input {
@@ -21,7 +29,7 @@
     outline: none;
     display: block;
     width: 100%;
-    padding: 0 20px;
+    padding: 0 10px 0 15px;
     font: 16px Arial, sans-serif;
 }
 
@@ -34,9 +42,15 @@
 }
 
 .todo-item__close-icon {
-    width: 17px;
-    height: 12px;
-    background: url(../img/cross.svg) no-repeat;
+    margin-right: 2px;
+    width: 19px;
+    height: 15px;
+    background: url(../img/cancel.svg) no-repeat;
     cursor: pointer;
     opacity: .5;
+}
+
+.todo-item__close-icon:hover {
+    opacity: 1;
+    transition: opacity ease-out .7s;
 }
