@@ -2,6 +2,43 @@
     margin: 0; padding: 0;
 }
 
+.todo__items-box{
+    max-height: 245px;
+    overflow: auto;
+}
+
+.todo__items-box::-webkit-scrollbar-button { 
+    background-image:url(''); 
+    background-repeat:no-repeat; 
+    width:6px; 
+    height:0px 
+} 
+
+.todo__items-box::-webkit-scrollbar-track { 
+    background-color:#fcfdff; 
+    box-shadow:0px 0px 1px #aaa inset; 
+} 
+
+.todo__items-box::-webkit-scrollbar-thumb { 
+    background-color:#ddeeff; 
+    box-shadow:0px 1px 1px #fff inset; 
+    background-image:url('https://yraaa.ru/_pu/24/59610063.png'); 
+    background-position:center; 
+    background-repeat:no-repeat; 
+} 
+
+.todo__items-box::-webkit-resizer{ 
+    background-image:url(''); 
+    background-repeat:no-repeat; 
+    width:7px; 
+    height:0px 
+} 
+
+.todo__items-box::-webkit-scrollbar{ 
+    width: 11px; 
+}
+
+
 .todo-item {
     display: flex;
     justify-content: space-between;
@@ -15,11 +52,23 @@
     border-bottom: none;
 }
 
-.todo-item:first-child {
-    margin-top: 15px;
+
+
+.todo-item__close-icon {
+    margin-right: 2px;
+    width: 19px;
+    height: 16px;
+    background: url(../img/delete-button.svg) no-repeat;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity ease-out .3s;
 }
 
-.todo-item.completed .todo-item__input {
+.todo-item:hover .todo-item__close-icon {
+    opacity: 1;
+}
+
+.todo-item__input.completed {
     text-decoration: line-through;
     color: rgba(149, 149, 149, .7);
 }
@@ -39,18 +88,4 @@
 
 .todo-item__checkbox {
     width: 18px;
-}
-
-.todo-item__close-icon {
-    margin-right: 2px;
-    width: 19px;
-    height: 15px;
-    background: url(../img/cancel.svg) no-repeat;
-    cursor: pointer;
-    opacity: .5;
-}
-
-.todo-item__close-icon:hover {
-    opacity: 1;
-    transition: opacity ease-out .7s;
 }

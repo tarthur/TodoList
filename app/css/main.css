@@ -7,57 +7,25 @@ body {
 }
 
 header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: relative;
+    /* display: flex; */
+    /* align-items: center; */
+    /* justify-content: center; */
     flex-direction: column;
     font-family: 'Cabin', sans-serif;
     letter-spacing: .1em;
     font-size: 20px;
-    padding: 30px 0 50px;
-    margin: 0 0 30px 0;
+    padding: 20px 0 33px;
+    margin: 0 0 10px 0;
     border-bottom: 1px solid #eee;
     text-align: center;
     background: #414141 url(../img/cross-stripes.png);
 }
 
 header h1 {
+    display: inline-block;
     color: rgb(149, 149, 149);
-    font-size: 60px;
-    margin: 0px 0 20px;
-}
-
-.todo-wrap {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 0 25px;
-}
-
-.todo-2 {
-    margin-left: 5%;
-}
-
-
-
-
-
-
-/*theme2*/
-/*#45919c*/
-.list-builder-wrap button {
-    background-color: #a93f41 !important;
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, .2);
-}
-.list-builder-wrap button:hover {
-    background-color: #ba4f50 !important;
-}
-
-.todo-form__delete-btn {
-    background: #44a1ae !important; 
-}
-
-.todo-form__delete-btn:hover {
-    background: #49b4c3 !important;
+    font-size: 48px;
+    margin: 0;
+    margin-bottom: 15px;
 }

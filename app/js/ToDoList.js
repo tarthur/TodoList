@@ -1,64 +1,140 @@
 import { ToDoListItem } from "./ToDoListItem.js";
 
+const defaultOptions = {
+    listTitle: 'Todo List name',
+    inputPlaceholder: 'What needs to be done?...'
+};
+
+const listItemTemplate = `
+    <div class="todo-title-wrap">
+        <input type="text" class="todo-title readonly" readonly>
+        <button class="todo-form__delete-todo-list"></button>
+    </div>
+    <form class="todo-form">
+        <input class="todo-form__input" type="text">
+        <button class="todo-form__btn"></button>
+    </form>
+    <div class="additional-functions">
+        <input class="todo-form__checkbox" type="checkbox">
+        <button class="todo-form__delete-btn"></button>
+    </div> 
+    <ul class="todo__items-box"></ul>
+
+`;
 
 /**
- * @param {HTML any block blement} todoBox
- * @param {HTMLFormElement} form
- * @param {HTMLInputElement} formInput
- * @param {HTMLButtonElement} formButton
- * @param {HTMLULElement} itemsBox
- * @param {Array} itemsBox
+ * @param {string} value
+ * @param {object} state
  */
 export class ToDoList {
-    constructor() {
-        this.todoBox = document.createElement('div');
-        this.form = document.createElement('form');
-        this.formInput = document.createElement('input');
-        this.formButton = document.createElement('button');
-        this.formDeleteAllButton = document.createElement('button');
-        this.itemsBox = document.createElement('ul');
+    constructor(value, state) {
+        this.options = defaultOptions;
+        this.state = state || {};
+        this.state = {
+            isListEmpty: true,
+            listTitle: value || this.options.listTitle,
+            checkbox: false,
+            inputPlaceholder: this.options.inputPlaceholder
+        }
+        this.state = Object.assign({}, this.state, state); // merge with new state
         this.listItems = [];
+
+        this.todoBox = document.createElement('div');
+        this.todoBox.innerHTML = listItemTemplate;
+        this.form = this.todoBox.querySelector('.todo-form');
+        this.listTitle = this.todoBox.querySelector('.todo-title');
+        this.checkbox = this.todoBox.querySelector('.todo-form__checkbox');
+        this.formButton = this.todoBox.querySelector('.todo-form__btn');
+        this.formInput = this.todoBox.querySelector('.todo-form__input');
+        this.formDeleteAllButton = this.todoBox.querySelector('.todo-form__delete-btn');
+        this.itemsBox = this.todoBox.querySelector('.todo__items-box');
+        this.additionalFunctions = this.todoBox.querySelector('.additional-functions');
+        this.deleteTodoListButton = this.todoBox.querySelector('.todo-form__delete-todo-list');
+        this.clickDeleteTodoListEvent;
+        this.updateStorageEvent;
 
         this.init();
     }
 
     init() {
         this.todoBox.classList.add('todo');
-
-        this.form.classList.add('todo-form');
-        this.formInput.classList.add('todo-form__input');
-        this.formInput.type = 'text';
-        this.formInput.placeholder = 'What needs to be done?...';
-        this.formButton.classList.add('todo-form__btn');
-        this.formDeleteAllButton.classList.add('todo-form__delete-btn')
-        this.formDeleteAllButton.innerHTML = 'Delete All';
-
-        this.itemsBox.classList.add('todo__items-box');
-
-        this.form.appendChild(this.formDeleteAllButton);
-        this.form.appendChild(this.formInput);
-        this.form.appendChild(this.formButton);
-        this.todoBox.appendChild(this.form);
-        this.todoBox.appendChild(this.itemsBox);
-
+        this.setState();
         this.initEvents();
+    }
+
+    setState() {
+        this.checkbox.checked = this.state.checkbox;
+        this.listTitle.value = this.state.listTitle;
+        this.formInput.placeholder = this.state.inputPlaceholder;
     }
 
     initEvents() {
         this.formButton.addEventListener('click', (e) => { this.onClickButtonForm(e) });
+        this.checkbox.addEventListener('click', (e) => { this.onClickСheckboxForm(e) });
+        this.deleteTodoListButton.addEventListener('click', (e) => { this.onClickDeleteTodoList(e) });
         this.formDeleteAllButton.addEventListener('click', (e) => { this.onClickDeleteAllButton(e) });
+        this.listTitle.addEventListener('input', this.onInputListTitle.bind(this));
+        this.listTitle.addEventListener('dblclick', this.onDblclickListTitle.bind(this.listTitle));
+        this.listTitle.addEventListener('blur', this.onBlurListTitle.bind(this.listTitle));
+        this.listTitle.addEventListener('keydown', this.onKeydownListTitle.bind(this.listTitle));
+    }
+
+    // Events
+
+    onClickСheckboxForm() {
+        let checkboxStete = !this.state.checkbox ? false : true;
+
+        this.listItems.forEach(item => {
+            item.state.checkbox = checkboxStete;
+            item.onClickCheckbox();
+        })
+
+        this.state.checkbox = this.checkbox.checked;
+        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+    }
+
+    onKeydownListTitle(e) {
+        if (e.keyCode === 13) { this.blur(); }
+    }
+
+    onBlurListTitle(e) {
+        this.readOnly = true;
+        this.classList.add('readonly')
+    }
+
+    onInputListTitle(e) {
+        this.state.listTitle = this.listTitle.value;
+        this.createrCustomEvents('listOnInputListTitle', { state: this.state }, this.listTitle);
+        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+    }
+
+    onDblclickListTitle(e) {
+        this.readOnly = false;
+        this.classList.remove('readonly');
+        this.select();
+    }
+
+    onClickDeleteTodoList() {
+        if (!this.clickDeleteTodoListEvent) { this.customEventClickDeleteTodoList() }
+        this.todoBox.dispatchEvent(this.clickDeleteTodoListEvent);
+        this.todoBox.remove();
+        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
     }
 
     onClickDeleteAllButton(e) {
         e.preventDefault();
 
         if (!this.isEmptyArray()) {
-            let l = this.listItems.length;
+            this.listItems = [];
+            this.itemsBox.innerHTML = '';
 
-            for (let i = (l - 1); i >= 0; i--) {
-                this.listItems[i].onClickCloseIcon(null, this.listItems[i].itemBox);
-            }
+            this.isListEmpty = false;
+            this.createrCustomEvents('onDeleteAllItems', { state: this.state }, this.todoBox);
+            this.showAdditionalFunctions();
+            this.checkbox.checked = false;
         }
+
+        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
     }
 
     onClickButtonForm(e) {
@@ -67,71 +143,82 @@ export class ToDoList {
         if (this.isEmptyInput()) {
             return alert('Введите текст');
         }
-        
-        this.addTodoItem();
+
+        this.initTodoItem(this.getInputValue());
     }
 
-    addTodoItem() {
-        const item = this.createTodoItem();
+    // custom Event
 
-        this.listItems.push(item);
-        this.itemsBox.appendChild(item.itemBox);
+    customEventClickDeleteTodoList() {
+        this.clickDeleteTodoListEvent = new CustomEvent('onClickDeleteTodoList', {
+            bubbles: true,
+            detail: { elem: this }
+        });
     }
 
-    createTodoItem(value) {
-        const item = new ToDoListItem(this.getInputValue());
-        item.itemBox.addEventListener('changeTodoItemState', (e) => { this.onChangedTodoState(e, item) });
+    customEventUpdateStorage(objElement, dispatchElement) {
+        objElement = new CustomEvent('updateStorage', {
+            bubbles: true,
+            detail: { state: this.state }
+        });
+
+        dispatchElement.dispatchEvent(objElement);
+    }
+
+    // ***
+
+    createTodoItem(value, options) {
+        const item = new ToDoListItem(value, options);
+        item.getListItem().addEventListener('ToDoListItem.todoItemClickCloseIcon', this.onClickCloseIconTodoItem.bind(this, item));
 
         return item;
     }
 
-    onChangedTodoState(e, item) {
-        switch (e.detail.action) {
-            case 'finished':
-                this.finishedItem(e, item);
-                break;
-            case 'changed':
-                this.changedItem(e, item);
-                break;
-            case 'deleted':
-                this.deleteItem(e, item);
-                break;
-        }
-    }
-
-    deleteItem(e, item) {
+    onClickCloseIconTodoItem(item, e) {
         this.listItems.forEach((arrayItem, i) => {
             if (arrayItem === item) {
                 return this.listItems.splice(i, 1);
             }
-        })
+        });
+
+        this.showAdditionalFunctions();
+        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
     }
 
-    changedItem(e, item) {
-        console.log(`finishedItem. ToDoListItem.state: ${item.state.input}`);
+    createrCustomEvents(nameEvent, detailParams, dispatchElement) {
+        let updateTitle = new CustomEvent(nameEvent, {
+            bubbles: true,
+            detail: detailParams
+        });
+
+        dispatchElement.dispatchEvent(updateTitle);
     }
 
-    finishedItem(e, item) {
-        console.log(`finishedItem. ToDoListItem.state: ${item.state.checkbox}`);
+    initTodoItem(value, options) {
+        const item = this.createTodoItem(value, options);
+        this.addTodoItem(item);
+        this.showAdditionalFunctions();
+        this.itemsBox.scrollTop = this.itemsBox.scrollHeight;
     }
 
-    getInputValue() {
-        return this.formInput.value;
+    addTodoItem(item) {
+        this.listItems.push(item);
+        this.itemsBox.appendChild(item.getListItem());
+
+        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
     }
 
-    isEmptyInput() {
-        return this.getInputValue() === '';
+    showAdditionalFunctions() {
+        if (this.listItems.length > 0) {
+            this.additionalFunctions.classList.add('visible');
+        } else {
+            this.additionalFunctions.classList.remove('visible');
+        }
     }
 
-    isEmptyArray() {
-        return this.listItems.length === 0;
-    }
-
-    getTodoList() {
-        return this.todoBox;
-    }
-
-    getVisible() {
-        this.todoBox.classList.add('visible');
-    }
+    getInputValue() { return this.formInput.value; }
+    isEmptyInput() { return this.getInputValue() === ''; }
+    isEmptyArray() { return this.listItems.length === 0; }
+    getTodoList() { return this.todoBox; }
+    getVisible() { this.todoBox.classList.add('visible'); }
 }

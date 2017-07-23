@@ -1,5 +1,7 @@
 import { ToDoBuilder } from "./ToDoBuilder.js";
 
 
-let listBuilder = document.getElementById('listBuilder');
-let todoBuilder = new ToDoBuilder(listBuilder);
+let todoBuilderInitial = document.getElementById('todo-builder__initial');
+let todoBuilderreturned = document.getElementById('todo-builder__lists-container');
+
+let todoBuilder = new ToDoBuilder(todoBuilderInitial, todoBuilderreturned);
