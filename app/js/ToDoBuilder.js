@@ -25,7 +25,7 @@ export class ToDoBuilder {
     init() {
         let storage = localStorage.getItem('todolist');
 
-        if (storage) {
+        if (storage && storage !== '[]') {
             storage = JSON.parse(storage);
             this.buildFromLocalStorage(storage);
         } else {

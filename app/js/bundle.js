@@ -38,7 +38,7 @@ var ToDoBuilder = exports.ToDoBuilder = function () {
         value: function init() {
             var storage = localStorage.getItem('todolist');
 
-            if (storage) {
+            if (storage && storage !== '[]') {
                 storage = JSON.parse(storage);
                 this.buildFromLocalStorage(storage);
             } else {
