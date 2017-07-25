@@ -57,6 +57,7 @@ var ToDoBuilder = exports.ToDoBuilder = function () {
             this.resultBox.addEventListener('updateStorage', this.updateLocalStorage.bind(this));
 
             this.resultBox.addEventListener('ToDoListItem.todoItemClickCloseIcon', this.updateLocalStorage.bind(this, 'changeStructure'));
+            this.resultBox.addEventListener('ToDoList.onDeleteAllItems', this.updateLocalStorage.bind(this, 'changeStructure'));
             this.todoBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
             this.todoBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
         }
@@ -329,12 +330,12 @@ var ToDoList = exports.ToDoList = function () {
                 this.itemsBox.innerHTML = '';
 
                 this.isListEmpty = false;
-                this.createrCustomEvents('onDeleteAllItems', { state: this.state }, this.todoBox);
+                this.createrCustomEvents('ToDoList.onDeleteAllItems', { state: this.state }, this.todoBox);
                 this.showAdditionalFunctions();
                 this.checkbox.checked = false;
             }
 
-            this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+            // this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
         }
     }, {
         key: 'onClickButtonForm',

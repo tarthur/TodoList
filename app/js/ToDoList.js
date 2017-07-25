@@ -124,12 +124,12 @@ export class ToDoList {
             this.itemsBox.innerHTML = '';
 
             this.isListEmpty = false;
-            this.createrCustomEvents('onDeleteAllItems', { state: this.state }, this.todoBox);
+            this.createrCustomEvents('ToDoList.onDeleteAllItems', { state: this.state }, this.todoBox);
             this.showAdditionalFunctions();
             this.checkbox.checked = false;
         }
 
-        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+        // this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
     }
 
     onClickButtonForm(e) {
