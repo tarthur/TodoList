@@ -23,22 +23,10 @@ const listItemTemplate = `
 `;
 
 /**
- * @param {string} value
- * @param {object} state
+ * @param {string} valueValue
  */
 export class ToDoList {
-    constructor(value, state) {
-        this.options = defaultOptions;
-        this.state = state || {};
-        this.state = {
-            isListEmpty: true,
-            listTitle: value || this.options.listTitle,
-            checkbox: false,
-            inputPlaceholder: this.options.inputPlaceholder
-        }
-        this.state = Object.assign({}, this.state, state); // merge with new state
-        this.listItems = [];
-
+    constructor(valueValue = '', checkboxChecked = false, options = {}) {
         this.todoBox = document.createElement('div');
         this.todoBox.innerHTML = listItemTemplate;
         this.form = this.todoBox.querySelector('.todo-form');
@@ -50,6 +38,17 @@ export class ToDoList {
         this.itemsBox = this.todoBox.querySelector('.todo__items-box');
         this.additionalFunctions = this.todoBox.querySelector('.additional-functions');
         this.deleteTodoListButton = this.todoBox.querySelector('.todo-form__delete-todo-list');
+
+        this.options = Object.assign({}, defaultOptions, options); // merge options
+
+        this.todolistTitle = valueValue || this.options.listTitle;
+        this.checkboxChecked = checkboxChecked;
+        
+        this.inputPlaceholder = this.options.inputPlaceholder;
+        this.isListEmpty = true;
+
+        this.listItems = [];
+        
         this.clickDeleteTodoListEvent;
         this.updateStorageEvent;
 
@@ -58,14 +57,10 @@ export class ToDoList {
 
     init() {
         this.todoBox.classList.add('todo');
-        this.setState();
+        this.checkbox.checked = this.checkboxChecked;
+        this.listTitle.value = this.todolistTitle;
+        this.formInput.placeholder = this.inputPlaceholder;
         this.initEvents();
-    }
-
-    setState() {
-        this.checkbox.checked = this.state.checkbox;
-        this.listTitle.value = this.state.listTitle;
-        this.formInput.placeholder = this.state.inputPlaceholder;
     }
 
     initEvents() {
@@ -82,14 +77,14 @@ export class ToDoList {
     // Events
 
     onClickСheckboxForm() {
-        let checkboxStete = !this.state.checkbox ? false : true;
+        let checkboxStete = !this.checkboxChecked ? false : true;
 
         this.listItems.forEach(item => {
-            item.state.checkbox = checkboxStete;
+            item.checkboxChecked = checkboxStete;
             item.onClickCheckbox();
         })
 
-        this.state.checkbox = this.checkbox.checked;
+        this.checkboxChecked = this.checkbox.checked;
         this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
     }
 
@@ -103,7 +98,7 @@ export class ToDoList {
     }
 
     onInputListTitle(e) {
-        this.state.listTitle = this.listTitle.value;
+        this.todolistTitle = this.listTitle.value;
         this.createrCustomEvents('listOnInputListTitle', { state: this.state }, this.listTitle);
         this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
     }
@@ -159,7 +154,7 @@ export class ToDoList {
     customEventUpdateStorage(objElement, dispatchElement) {
         objElement = new CustomEvent('updateStorage', {
             bubbles: true,
-            detail: { state: this.state }
+            detail: { state: 2 }
         });
 
         dispatchElement.dispatchEvent(objElement);
@@ -167,8 +162,8 @@ export class ToDoList {
 
     // ***
 
-    createTodoItem(value, options) {
-        const item = new ToDoListItem(value, options);
+    createTodoItem(valueValue, checkboxChecked) {
+        const item = new ToDoListItem(valueValue, checkboxChecked);
         item.getListItem().addEventListener('ToDoListItem.todoItemClickCloseIcon', this.onClickCloseIconTodoItem.bind(this, item));
 
         return item;
@@ -182,7 +177,6 @@ export class ToDoList {
         });
 
         this.showAdditionalFunctions();
-        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
     }
 
     createrCustomEvents(nameEvent, detailParams, dispatchElement) {
@@ -194,8 +188,8 @@ export class ToDoList {
         dispatchElement.dispatchEvent(updateTitle);
     }
 
-    initTodoItem(value, options) {
-        const item = this.createTodoItem(value, options);
+    initTodoItem(valueValue, checkboxChecked) {
+        const item = this.createTodoItem(valueValue, checkboxChecked);
         this.addTodoItem(item);
         this.showAdditionalFunctions();
         this.itemsBox.scrollTop = this.itemsBox.scrollHeight;

@@ -18,6 +18,7 @@ export class ToDoBuilder {
         this.clearBtn = this.todoBuilder.querySelector('.todo-builder__clear-btn');
         this.resultBox = resultBox;
         this.todoListArray = [];
+        this.localStorageArray = null;
 
         this.init();
     }
@@ -40,20 +41,27 @@ export class ToDoBuilder {
         this.clearBtn.addEventListener('click', this.onClickClearBtn.bind(this));
         this.resultBox.addEventListener('onClickDeleteTodoList', this.onClickDeleteTodoList.bind(this));
         this.resultBox.addEventListener('updateStorage', this.updateLocalStorage.bind(this));
+
+        this.resultBox.addEventListener('ToDoListItem.todoItemClickCloseIcon', this.updateLocalStorage.bind(this, 'changeStructure'));
+        this.todoBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
+        this.todoBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
     }
+
 
     buildFromLocalStorage(storage) {
         this.todoListArray = [];
         this.resultBox.innerHTML = '';
 
-        storage.forEach((toDoList) => {
-            let list = new ToDoList(null, toDoList.state);
+        storage.forEach((tList) => {
+            let toDoList = tList.todoList;
+            let toDoListArr = tList.totoListArr;
+            let list = new ToDoList(toDoList.todolistTitle, toDoList.checkboxChecked);
 
             this.todoListArray.push(list);
             this.getVisibleClearBtn();
 
-            toDoList.arr.forEach(toDoListItem => {
-                list.initTodoItem(null, toDoListItem.state);
+            toDoListArr.forEach(toDoListItem => {
+                list.initTodoItem(toDoListItem.valueValue, toDoListItem.checkboxChecked);
             });
 
             this.resultBox.appendChild(list.getTodoList());
@@ -61,21 +69,20 @@ export class ToDoBuilder {
         });
     }
 
-    updateLocalStorage() {
-        if (localStorage.getItem('todolist')) localStorage.removeItem('todolist')
+    updateLocalStorage(structure) {
+        if (structure === 'changeStructure' || this.localStorageArray === null) {
+            this.localStorageArray = this.todoListArray.map(totoList => {
+                return {
+                    'todoList': totoList,
+                    'totoListArr': totoList.listItems
+                };
+            });
+        }
 
-        let newListData = this.todoListArray.map(totoList => {
-            let obj = {
-                arr: totoList.listItems,
-                state: totoList.state
-            };
-
-            return obj;
-        });
-
-        const newData = JSON.stringify(newListData);
+        const newData = JSON.stringify(this.localStorageArray);
         localStorage.setItem('todolist', newData);
     }
+
 
     onClickDeleteTodoList(e) {
         this.todoListArray.forEach((item, i) => {
@@ -85,18 +92,19 @@ export class ToDoBuilder {
         })
 
         this.getVisibleClearBtn();
-        this.updateLocalStorage();
+        this.updateLocalStorage('changeStructure');
     }
 
     onClickClearBtn(e) {
         this.clear();
         this.getVisibleClearBtn();
         this.addTodoList();
-        this.updateLocalStorage();
+        this.updateLocalStorage('changeStructure');
     }
 
     onClickAddBtn(e) {
         this.addTodoList()
+        this.customEventAddTodoListEvent();
         this.updateLocalStorage();
         this.getVisibleClearBtn();
     }
@@ -106,6 +114,15 @@ export class ToDoBuilder {
         this.todoListArray.push(todoList);
         this.resultBox.appendChild(todoList.getTodoList());
         setTimeout(() => { todoList.getVisible() }, 10)
+    }
+
+    customEventAddTodoListEvent() {
+        event = new CustomEvent("ToDoBuilder.addTodoListEvent", {
+            bubbles: true,
+            detail: {}
+        });
+
+        this.addBtn.dispatchEvent(event);
     }
 
     clear() {
