@@ -1,0 +1,69 @@
+.todo-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style-type: none;
+    padding: 9px 9px;
+    cursor: pointer;
+    box-shadow: 0 0 1px rgba(0,0,0,.0);
+    transition: box-shadow ease-out .5s;
+
+    &:hover {
+        box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    &:first-child {
+        border-top: 1px solid #eee;
+    }
+
+    &:last-child {
+    }
+
+    &__close-btn {
+        margin-right: 2px;
+        width: 19px;
+        height: 16px;
+        background: url(../img/delete-button.svg) no-repeat;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity ease-out .3s;
+    }
+
+    &:hover &__close-btn {
+        opacity: 1;
+    }
+
+    &__input.completed {
+        text-decoration: line-through;
+        color: rgba(149, 149, 149, .7);
+    }
+
+    &__input {
+        border: none;
+        outline: none;
+        display: block;
+        width: 100%;
+        padding: 0 10px 0 15px;
+        font: 16px Arial, sans-serif;
+        background: transparent;
+    }
+
+    &__input.active {
+        border: 1px solid #000;
+    }
+
+    &__checkbox {
+        display: none;
+    }
+
+    .todo-list-item__checkbox-lable {
+        display: inline-block;
+        width: 14px;
+        height: 11px;
+        cursor: pointer;
+        border: 2px solid #ccc;
+        border-radius: 3px;
+    }
+
+
+}

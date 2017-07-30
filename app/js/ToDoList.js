@@ -1,91 +1,72 @@
 import { ToDoListItem } from "./ToDoListItem.js";
 
 const defaultOptions = {
-    listTitle: 'Todo List name',
+    listTitle: 'Todo list title',
     inputPlaceholder: 'What needs to be done?...'
 };
 
 const listItemTemplate = `
-    <div class="todo-title-wrap">
-        <input type="text" class="todo-title readonly" readonly>
-        <button class="todo-form__delete-todo-list"></button>
+    <div class="todo-list__title-wrap">
+        <input class="todo-list__title" type="text" readonly" readonly>
+        <button class="todo-list__delete-todo-list"></button>
     </div>
-    <form class="todo-form">
-        <input class="todo-form__input" type="text">
-        <button class="todo-form__btn"></button>
+    <ul class="todo-list__todo-list-items"></ul>
+    <form class="todo-list__form">
+        <input class="todo-list__form-input" type="text">
+        <button class="todo-list__form-delete-btn"></button>
     </form>
-    <div class="additional-functions">
-        <input class="todo-form__checkbox" type="checkbox">
-        <button class="todo-form__delete-btn"></button>
-    </div> 
-    <ul class="todo__items-box"></ul>
-
 `;
 
 /**
  * @param {string} valueValue
  */
 export class ToDoList {
-    constructor(valueValue = '', checkboxChecked = false, options = {}) {
-        this.todoBox = document.createElement('div');
-        this.todoBox.innerHTML = listItemTemplate;
-        this.form = this.todoBox.querySelector('.todo-form');
-        this.listTitle = this.todoBox.querySelector('.todo-title');
-        this.checkbox = this.todoBox.querySelector('.todo-form__checkbox');
-        this.formButton = this.todoBox.querySelector('.todo-form__btn');
-        this.formInput = this.todoBox.querySelector('.todo-form__input');
-        this.formDeleteAllButton = this.todoBox.querySelector('.todo-form__delete-btn');
-        this.itemsBox = this.todoBox.querySelector('.todo__items-box');
-        this.additionalFunctions = this.todoBox.querySelector('.additional-functions');
-        this.deleteTodoListButton = this.todoBox.querySelector('.todo-form__delete-todo-list');
-
+    constructor(valueValue = '', options = {}) {
+        this.todoList = document.createElement('div');
+        this.todoList.innerHTML = listItemTemplate;
+        // find html elements
+        this.todoListTitle = this.todoList.querySelector('.todo-list__title');
+        this.todoListDeleteBtn = this.todoList.querySelector('.todo-list__delete-todo-list');
+        this.todoListItems = this.todoList.querySelector('.todo-list__todo-list-items');
+        this.form = this.todoList.querySelector('.todo-list__form');
+        this.formInput = this.todoList.querySelector('.todo-list__form-input');
+        this.formDeleteAllButton = this.todoList.querySelector('.todo-list__form-delete-btn');
+        // options
         this.options = Object.assign({}, defaultOptions, options); // merge options
-
-        this.todolistTitle = valueValue || this.options.listTitle;
-        this.checkboxChecked = checkboxChecked;
-        
-        this.inputPlaceholder = this.options.inputPlaceholder;
-        this.isListEmpty = true;
-
-        this.listItems = [];
-        
+        //state
+        this.todolistTextTitle = valueValue || this.options.listTitle;
+        this.inputTextPlaceholder = this.options.inputPlaceholder;
+        // events
         this.clickDeleteTodoListEvent;
         this.updateStorageEvent;
+        // obj variables
+        this.isListEmpty = true;
+        this.listItems = [];
 
         this.init();
     }
 
     init() {
-        this.todoBox.classList.add('todo');
-        this.checkbox.checked = this.checkboxChecked;
-        this.listTitle.value = this.todolistTitle;
-        this.formInput.placeholder = this.inputPlaceholder;
+        this.todoList.classList.add('todo-list');
+        // set state
+        this.todoListTitle.value = this.todolistTextTitle;
+        this.formInput.placeholder = this.inputTextPlaceholder;
+        
         this.initEvents();
     }
 
     initEvents() {
-        this.formButton.addEventListener('click', (e) => { this.onClickButtonForm(e) });
-        this.checkbox.addEventListener('click', (e) => { this.onClickСheckboxForm(e) });
-        this.deleteTodoListButton.addEventListener('click', (e) => { this.onClickDeleteTodoList(e) });
-        this.formDeleteAllButton.addEventListener('click', (e) => { this.onClickDeleteAllButton(e) });
-        this.listTitle.addEventListener('input', this.onInputListTitle.bind(this));
-        this.listTitle.addEventListener('dblclick', this.onDblclickListTitle.bind(this.listTitle));
-        this.listTitle.addEventListener('blur', this.onBlurListTitle.bind(this.listTitle));
-        this.listTitle.addEventListener('keydown', this.onKeydownListTitle.bind(this.listTitle));
+        this.todoListDeleteBtn.addEventListener('click', this.onClickDeleteTodoList.bind(this));
+        this.formDeleteAllButton.addEventListener('click', this.onClickDeleteAllButton.bind(this));
+        this.formInput.addEventListener('input', this.onClickButtonForm.bind(this));
+        this.listTitleEvents();
     }
 
-    // Events
-
-    onClickСheckboxForm() {
-        let checkboxStete = !this.checkboxChecked ? false : true;
-
-        this.listItems.forEach(item => {
-            item.checkboxChecked = checkboxStete;
-            item.onClickCheckbox();
-        })
-
-        this.checkboxChecked = this.checkbox.checked;
-        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+    listTitleEvents() {
+        this.todoListTitle.addEventListener('input', this.onInputListTitle.bind(this));
+        this.todoListTitle.addEventListener('dblclick', this.onDblclickListTitle.bind(this.todoListTitle));
+        this.todoListTitle.addEventListener('blur', this.onBlurListTitle.bind(this));
+        this.todoListTitle.addEventListener('keydown', this.onKeydownListTitle.bind(this.todoListTitle));
     }
 
     onKeydownListTitle(e) {
@@ -93,14 +74,15 @@ export class ToDoList {
     }
 
     onBlurListTitle(e) {
-        this.readOnly = true;
-        this.classList.add('readonly')
+        this.todoListTitle.readOnly = true;
+        this.todoListTitle.classList.add('readonly')
+        this.todolistTextTitle = this.todoListTitle.value;
+        this.customEventUpdateStorage(this.updateStorageEvent, this.todoList);
     }
 
     onInputListTitle(e) {
-        this.todolistTitle = this.listTitle.value;
-        this.createrCustomEvents('listOnInputListTitle', { state: this.state }, this.listTitle);
-        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+        this.todolistTitle = this.todoListTitle.value;
+        this.createrCustomEvents('listOnInputListTitle', { state: this.state }, this.todoListTitle);
     }
 
     onDblclickListTitle(e) {
@@ -111,9 +93,9 @@ export class ToDoList {
 
     onClickDeleteTodoList() {
         if (!this.clickDeleteTodoListEvent) { this.customEventClickDeleteTodoList() }
-        this.todoBox.dispatchEvent(this.clickDeleteTodoListEvent);
-        this.todoBox.remove();
-        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+        this.todoList.dispatchEvent(this.clickDeleteTodoListEvent);
+        this.todoList.remove();
+        this.customEventUpdateStorage(this.updateStorageEvent, this.todoList);
     }
 
     onClickDeleteAllButton(e) {
@@ -121,28 +103,16 @@ export class ToDoList {
 
         if (!this.isEmptyArray()) {
             this.listItems = [];
-            this.itemsBox.innerHTML = '';
+            this.todoListItems.innerHTML = '';
 
             this.isListEmpty = false;
-            this.createrCustomEvents('ToDoList.onDeleteAllItems', { state: this.state }, this.todoBox);
-            this.showAdditionalFunctions();
-            this.checkbox.checked = false;
+            this.createrCustomEvents('ToDoList.onDeleteAllItems', { state: this.state }, this.todoList);
         }
-
-        // this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
     }
 
     onClickButtonForm(e) {
-        e.preventDefault();
-
-        if (this.isEmptyInput()) {
-            return alert('Введите текст');
-        }
-
         this.initTodoItem(this.getInputValue());
     }
-
-    // custom Event
 
     customEventClickDeleteTodoList() {
         this.clickDeleteTodoListEvent = new CustomEvent('onClickDeleteTodoList', {
@@ -160,8 +130,6 @@ export class ToDoList {
         dispatchElement.dispatchEvent(objElement);
     }
 
-    // ***
-
     createTodoItem(valueValue, checkboxChecked) {
         const item = new ToDoListItem(valueValue, checkboxChecked);
         item.getListItem().addEventListener('ToDoListItem.todoItemClickCloseIcon', this.onClickCloseIconTodoItem.bind(this, item));
@@ -175,8 +143,6 @@ export class ToDoList {
                 return this.listItems.splice(i, 1);
             }
         });
-
-        this.showAdditionalFunctions();
     }
 
     createrCustomEvents(nameEvent, detailParams, dispatchElement) {
@@ -191,28 +157,21 @@ export class ToDoList {
     initTodoItem(valueValue, checkboxChecked) {
         const item = this.createTodoItem(valueValue, checkboxChecked);
         this.addTodoItem(item);
-        this.showAdditionalFunctions();
-        this.itemsBox.scrollTop = this.itemsBox.scrollHeight;
+        this.todoListItems.scrollTop = this.todoListItems.scrollHeight;
+        item.input.focus()
+        this.formInput.value = '';
     }
 
     addTodoItem(item) {
         this.listItems.push(item);
-        this.itemsBox.appendChild(item.getListItem());
+        this.todoListItems.appendChild(item.getListItem());
 
-        this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
-    }
-
-    showAdditionalFunctions() {
-        if (this.listItems.length > 0) {
-            this.additionalFunctions.classList.add('visible');
-        } else {
-            this.additionalFunctions.classList.remove('visible');
-        }
+        this.customEventUpdateStorage(this.updateStorageEvent, this.todoList);
     }
 
     getInputValue() { return this.formInput.value; }
     isEmptyInput() { return this.getInputValue() === ''; }
     isEmptyArray() { return this.listItems.length === 0; }
-    getTodoList() { return this.todoBox; }
-    getVisible() { this.todoBox.classList.add('visible'); }
+    getTodoList() { return this.todoList; }
+    getVisible() { this.todoList.classList.add('visible'); }
 }

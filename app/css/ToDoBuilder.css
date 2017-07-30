@@ -1,52 +1,65 @@
-.todo-builder__add-btn {
-    cursor: pointer;
-    background-color: #a93f41;
-    border: none;
-    color: rgb(226, 226, 226);
-    font-weight: bold;
-    font-family: "Avenir Next", Avenir, "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 20px;
-    padding: 12px 23px 14px;
-    white-space: normal;
-    outline: none;
-    border-radius: 4px;
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, .2);
+.todo-list-builder__buttons {
+  margin: 30px;
+  position: fixed;
+  right: 0;
+  bottom: 0px;
+  z-index: 200;
 }
 
-.todo-builder__add-btn:hover {
-    background-color: #ba4f50;
-    transition: background-color ease-out .5s;
+.todo-list-builder__add-btn {
+  cursor: pointer;
+  background: #FF5252 url(../img/plus-symbol.svg) no-repeat 50%;
+  background-size: 50% 50%;
+  border: none;
+  color: #e2e2e2;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 12px 23px 14px;
+  white-space: normal;
+  outline: none;
+  border-radius: 50%;
+  height: 50px;
+  width: 50px;
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
 }
 
-.todo-builder__lists-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 0 25px;
+.todo-list-builder__add-btn:hover {
+  background-color: #ba4f50;
+  transition: background-color ease-out .5s;
 }
 
-.todo-builder__clear-btn {
-    cursor: pointer;
-    background-color: #3f75a9;
-    border: none;
-    color: rgb(226, 226, 226);
-    font-weight: bold;
-    font-family: "Avenir Next", Avenir, "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 20px;
-    padding: 12px 23px 14px;
-    white-space: normal;
-    outline: none;
-    border-radius: 4px;
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, .2);    
-    display: none;
-    transition: opacity ease-out .3s, background-color ease-out .3s;
+.todo-list-builder__container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 25px;
+  padding-top: 90px;
+  padding-bottom: 100px;
 }
 
-.todo-builder__clear-btn:hover {
-    background-color: #4281be;
+.todo-list-builder__clear-btn {
+  cursor: pointer;
+  background-color: #3f75a9;
+  border: none;
+  color: #e2e2e2;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 12px 23px 14px;
+  white-space: normal;
+  outline: none;
+  height: 50px;
+  width: 50px;
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  display: none;
+  transition: opacity ease-out .3s, background-color ease-out .3s;
 }
 
-.todo-builder__clear-btn.visible {
-    display: inline-block;
+.todo-list-builder__clear-btn:hover {
+  background-color: #4281be;
+}
+
+.todo-list-builder__clear-btn.visible {
+  display: inline-block;
 }

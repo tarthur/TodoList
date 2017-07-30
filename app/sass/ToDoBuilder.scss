@@ -1,0 +1,66 @@
+.todo-list-builder {
+    &__buttons {
+        margin: 30px;
+        position: fixed;
+        right: 0; bottom: 0px;
+        z-index: 200;
+    }
+
+    &__add-btn {
+        cursor: pointer;
+        background: #FF5252 url(../img/plus-symbol.svg) no-repeat 50%;
+        background-size: 50% 50%;
+        border: none;
+        color: rgb(226, 226, 226);
+        font-weight: bold;
+        font-size: 20px;
+        padding: 12px 23px 14px;
+        white-space: normal;
+        outline: none;
+        border-radius: 50%;
+        height: 50px;
+        width: 50px;
+        box-shadow: 1px 1px 7px rgba(0, 0, 0, .2);
+
+        &:hover {
+            background-color: #ba4f50;
+            transition: background-color ease-out .5s;
+        }
+    }
+
+    &__container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 0 25px;
+        padding-top: 90px;
+        padding-bottom: 100px;    
+    }
+    
+    &__clear-btn {
+        cursor: pointer;
+        background-color: #3f75a9;
+        border: none;
+        color: rgb(226, 226, 226);
+        font-weight: bold;
+        font-size: 20px;
+        padding: 12px 23px 14px;
+        white-space: normal;
+        outline: none;
+        height: 50px;
+        width: 50px;
+        box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);   
+        border-radius: 50%;
+        display: none;
+        transition: opacity ease-out .3s, background-color ease-out .3s;
+
+        &:hover {
+            background-color: #4281be;
+        }
+
+        &.visible {
+            display: inline-block;
+        }
+    }
+}
