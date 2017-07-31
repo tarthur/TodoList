@@ -1,7 +1,7 @@
 import { ToDoListItem } from "./ToDoListItem.js";
 
 const defaultOptions = {
-    listTitle: 'Todo list title',
+    listTitle: 'List title',
     inputPlaceholder: 'What needs to be done?...'
 };
 

@@ -1,21 +1,14 @@
 import { ToDoList } from "./ToDoList.js";
 
 
-const toDoBuilderTemplate = `
-    <button class="todo-list-builder__clear-btn"></button>
-    <button class="todo-list-builder__add-btn"></button>
-`;
-
 /**
  * @param {HTMLBlockElement} initialElement
  * @param {HTMLBlockElement} resultBox
  */
 export class ToDoBuilder {
-    constructor(initialElement, resultBox) {
-        this.todoListBuilder = initialElement;
-        this.todoListBuilder.innerHTML = toDoBuilderTemplate;
-        this.addBtn = this.todoListBuilder.querySelector('.todo-list-builder__add-btn');
-        this.clearBtn = this.todoListBuilder.querySelector('.todo-list-builder__clear-btn');
+    constructor(resultBox) {
+        this.addBtn = document.getElementById('todo-list-builder__add-btn');
+        this.clearBtn = document.getElementById('todo-list-builder__clear-btn');
         this.resultBox = resultBox;
         this.localStorageArray = null;
         this.todoListArray = [];
@@ -27,6 +20,7 @@ export class ToDoBuilder {
         this.checkLocalStorage();
         this.initEvents();
         this.initCustomEvents();
+        this.oneItem();
     }
 
     checkLocalStorage() {
@@ -50,8 +44,8 @@ export class ToDoBuilder {
         this.resultBox.addEventListener('updateStorage', this.updateLocalStorage.bind(this));
         this.resultBox.addEventListener('ToDoListItem.todoItemClickCloseIcon', this.updateLocalStorage.bind(this, 'changeStructure'));
         this.resultBox.addEventListener('ToDoList.onDeleteAllItems', this.updateLocalStorage.bind(this, 'changeStructure'));
-        this.todoListBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
-        this.todoListBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
+        this.resultBox.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
+        this.resultBox.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
     }
 
     buildFromLocalStorage(todoBuilderLocalStorage) {
@@ -89,6 +83,11 @@ export class ToDoBuilder {
     }
 
     updateLocalStorage(structure) {
+        this.setLocalStorageData(structure);
+        this.oneItem();
+    }
+
+    setLocalStorageData(structure) {
         if (structure === 'changeStructure' || this.localStorageArray === null) {
             this.localStorageArray = this.todoListArray.map(totoList => {
                 return {
@@ -99,7 +98,7 @@ export class ToDoBuilder {
         }
 
         const newData = JSON.stringify(this.localStorageArray);
-        console.log(newData)
+
         localStorage.setItem('todoBuilder', newData);
     }
 
@@ -116,16 +115,18 @@ export class ToDoBuilder {
     }
 
     onClickClearBtn(e) {
-        this.clear();
-        this.getVisibleClearBtn();
-        this.addTodoList();
-        this.updateLocalStorage('changeStructure');
+        if (e.target === this.clearBtn) {
+            this.clear();
+            this.getVisibleClearBtn();
+            this.addTodoList();
+            this.updateLocalStorage('changeStructure');
+        }
     }
 
     onClickAddBtn(e) {
         this.addTodoList()
         this.customEventAddTodoListEvent();
-        this.updateLocalStorage();
+            this.updateLocalStorage('changeStructure');
         this.getVisibleClearBtn();
     }
 
@@ -134,6 +135,7 @@ export class ToDoBuilder {
         this.todoListArray.push(todoList);
         this.resultBox.appendChild(todoList.getTodoList());
         setTimeout(() => { todoList.getVisible() }, 10)
+        this.oneItem();
     }
 
     customEventAddTodoListEvent() {
@@ -156,6 +158,14 @@ export class ToDoBuilder {
         }
 
         return this.clearBtn.classList.remove('visible');
+    }
+
+    oneItem () {
+        if (this.todoListArray.length === 1) {
+            this.resultBox.classList.add('one-item');
+        } else {
+            this.resultBox.classList.remove('one-item');
+        }
     }
 
     isEmptyArray() { return this.todoListArray.length === 0; }

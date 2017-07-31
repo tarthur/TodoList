@@ -34,20 +34,30 @@ export class ToDoListItem {
         this.itemBox.classList.add('todo-list-item');
         this.input.value = this.valueValue;
         this.checkbox.checked = this.checkboxChecked;
-        if (this.checkboxChecked) { this.input.classList.add('completed'); }
 
+        this.toggleCompleted( this.checkboxChecked );
         this.initEvents();
         
     }
 
     initEvents() {
         this.closeBtn.addEventListener('click', this.onClickCloseIcon.bind(this));
-        this.checkbox.addEventListener('click', this.onClickCheckbox.bind(this));
         this.checkboxLabel.addEventListener('click', this.onClickCheckboxLabel.bind(this));
         this.input.addEventListener('input', this.onInputEntryField.bind(this));
     }
 
     onClickCheckboxLabel(e) {
+        if (e.target === this.checkboxLabel) {
+            this.clickCheckbox();
+        }
+    }
+
+    clickCheckbox() {
+        console.log( this.toggleCompleted(this.checkbox.checked) )
+        this.toggleCompleted(!this.checkbox.checked);
+ 
+        if (!this.updateStorageEvent) { this.customEventUpdateLocalStorage(); }
+        this.checkbox.dispatchEvent(this.updateStorageEvent);
     }
 
     onClickCloseIcon(e) {
@@ -60,14 +70,8 @@ export class ToDoListItem {
         e.target.parentNode.remove();
     }
 
-    onClickCheckbox(e) {
-        this.checkboxChecked = this.checkbox.checked;
-        this.toggleCompleted();
- 
-            console.log(this.checkboxChecked)
-        if (!this.updateStorageEvent) { this.customEventUpdateLocalStorage(); }
-        this.checkbox.dispatchEvent(this.updateStorageEvent);
-    }
+    // onClickCheckbox(e) {
+    // }
 
     onInputEntryField(e) {
         this.valueValue = this.input.value;
@@ -106,8 +110,14 @@ export class ToDoListItem {
         });
     }
 
-    toggleCompleted() { 
-        this.checkbox.checked ? this.input.classList.add('completed') : this.input.classList.remove('completed'); 
+    toggleCompleted(state) { 
+        if (state) {
+            this.itemBox.classList.add('completed');
+        } else {
+            this.itemBox.classList.remove('completed');
+        }
+
+        return this.checkboxChecked = state;
     }
 
     getListItem() { return this.itemBox; }
