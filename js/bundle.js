@@ -12,24 +12,19 @@ var _ToDoList = require('./ToDoList.js');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var toDoBuilderTemplate = '\n    <button class="todo-builder__add-btn">Add new list</button>\n    <button class="todo-builder__clear-btn">Clear</button>\n';
-
 /**
  * @param {HTMLBlockElement} initialElement
  * @param {HTMLBlockElement} resultBox
  */
-
 var ToDoBuilder = exports.ToDoBuilder = function () {
-    function ToDoBuilder(initialElement, resultBox) {
+    function ToDoBuilder(resultBox) {
         _classCallCheck(this, ToDoBuilder);
 
-        this.todoBuilder = initialElement;
-        this.todoBuilder.innerHTML = toDoBuilderTemplate;
-        this.addBtn = this.todoBuilder.querySelector('.todo-builder__add-btn');
-        this.clearBtn = this.todoBuilder.querySelector('.todo-builder__clear-btn');
+        this.addBtn = document.getElementById('todo-list-builder__add-btn');
+        this.clearBtn = document.getElementById('todo-list-builder__clear-btn');
         this.resultBox = resultBox;
-        this.todoListArray = [];
         this.localStorageArray = null;
+        this.todoListArray = [];
 
         this.init();
     }
@@ -37,57 +32,88 @@ var ToDoBuilder = exports.ToDoBuilder = function () {
     _createClass(ToDoBuilder, [{
         key: 'init',
         value: function init() {
-            var storage = localStorage.getItem('todolist');
+            this.checkLocalStorage();
+            this.initEvents();
+            this.initCustomEvents();
+            this.oneItem();
+        }
+    }, {
+        key: 'checkLocalStorage',
+        value: function checkLocalStorage() {
+            var todoBuilderLocalStorage = localStorage.getItem('todoBuilder');
 
-            if (storage && storage !== '[]') {
-                storage = JSON.parse(storage);
-                this.buildFromLocalStorage(storage);
+            if (todoBuilderLocalStorage && todoBuilderLocalStorage !== '[]') {
+                todoBuilderLocalStorage = JSON.parse(todoBuilderLocalStorage);
+                this.buildFromLocalStorage(todoBuilderLocalStorage);
             } else {
                 this.addTodoList();
             }
-
-            this.initEvents();
         }
     }, {
         key: 'initEvents',
         value: function initEvents() {
             this.addBtn.addEventListener('click', this.onClickAddBtn.bind(this));
             this.clearBtn.addEventListener('click', this.onClickClearBtn.bind(this));
+        }
+    }, {
+        key: 'initCustomEvents',
+        value: function initCustomEvents() {
             this.resultBox.addEventListener('onClickDeleteTodoList', this.onClickDeleteTodoList.bind(this));
             this.resultBox.addEventListener('updateStorage', this.updateLocalStorage.bind(this));
-
             this.resultBox.addEventListener('ToDoListItem.todoItemClickCloseIcon', this.updateLocalStorage.bind(this, 'changeStructure'));
             this.resultBox.addEventListener('ToDoList.onDeleteAllItems', this.updateLocalStorage.bind(this, 'changeStructure'));
-            this.todoBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
-            this.todoBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
+            this.resultBox.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
+            this.resultBox.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
         }
     }, {
         key: 'buildFromLocalStorage',
-        value: function buildFromLocalStorage(storage) {
+        value: function buildFromLocalStorage(todoBuilderLocalStorage) {
             var _this = this;
 
+            this.clearResultBox();
+
+            todoBuilderLocalStorage.forEach(function (todoListObj) {
+                _this.buildLocalStorageTodoList(todoListObj);
+            });
+        }
+    }, {
+        key: 'buildLocalStorageTodoList',
+        value: function buildLocalStorageTodoList(todoListObj) {
+            var toDoList = todoListObj.todoList;
+            var toDoListItems = todoListObj.totoListArr;
+
+            var newTodoList = new _ToDoList.ToDoList(toDoList.todolistTextTitle);
+
+            this.todoListArray.push(newTodoList);
+            this.getVisibleClearBtn();
+
+            this.buildLocalStorageTodoListItems(newTodoList, toDoListItems);
+
+            this.resultBox.appendChild(newTodoList.getTodoList());
+            newTodoList.getVisible();
+        }
+    }, {
+        key: 'buildLocalStorageTodoListItems',
+        value: function buildLocalStorageTodoListItems(toDoList, toDoListItems) {
+            toDoListItems.forEach(function (toDoListItem) {
+                toDoList.initTodoItem(toDoListItem.valueValue, toDoListItem.checkboxChecked);
+            });
+        }
+    }, {
+        key: 'clearResultBox',
+        value: function clearResultBox() {
             this.todoListArray = [];
             this.resultBox.innerHTML = '';
-
-            storage.forEach(function (tList) {
-                var toDoList = tList.todoList;
-                var toDoListArr = tList.totoListArr;
-                var list = new _ToDoList.ToDoList(toDoList.todolistTitle, toDoList.checkboxChecked);
-
-                _this.todoListArray.push(list);
-                _this.getVisibleClearBtn();
-
-                toDoListArr.forEach(function (toDoListItem) {
-                    list.initTodoItem(toDoListItem.valueValue, toDoListItem.checkboxChecked);
-                });
-
-                _this.resultBox.appendChild(list.getTodoList());
-                list.getVisible();
-            });
         }
     }, {
         key: 'updateLocalStorage',
         value: function updateLocalStorage(structure) {
+            this.setLocalStorageData(structure);
+            this.oneItem();
+        }
+    }, {
+        key: 'setLocalStorageData',
+        value: function setLocalStorageData(structure) {
             if (structure === 'changeStructure' || this.localStorageArray === null) {
                 this.localStorageArray = this.todoListArray.map(function (totoList) {
                     return {
@@ -98,7 +124,8 @@ var ToDoBuilder = exports.ToDoBuilder = function () {
             }
 
             var newData = JSON.stringify(this.localStorageArray);
-            localStorage.setItem('todolist', newData);
+
+            localStorage.setItem('todoBuilder', newData);
         }
     }, {
         key: 'onClickDeleteTodoList',
@@ -117,17 +144,19 @@ var ToDoBuilder = exports.ToDoBuilder = function () {
     }, {
         key: 'onClickClearBtn',
         value: function onClickClearBtn(e) {
-            this.clear();
-            this.getVisibleClearBtn();
-            this.addTodoList();
-            this.updateLocalStorage('changeStructure');
+            if (e.target === this.clearBtn) {
+                this.clear();
+                this.getVisibleClearBtn();
+                this.addTodoList();
+                this.updateLocalStorage('changeStructure');
+            }
         }
     }, {
         key: 'onClickAddBtn',
         value: function onClickAddBtn(e) {
             this.addTodoList();
             this.customEventAddTodoListEvent();
-            this.updateLocalStorage();
+            this.updateLocalStorage('changeStructure');
             this.getVisibleClearBtn();
         }
     }, {
@@ -139,6 +168,7 @@ var ToDoBuilder = exports.ToDoBuilder = function () {
             setTimeout(function () {
                 todoList.getVisible();
             }, 10);
+            this.oneItem();
         }
     }, {
         key: 'customEventAddTodoListEvent',
@@ -166,6 +196,15 @@ var ToDoBuilder = exports.ToDoBuilder = function () {
             return this.clearBtn.classList.remove('visible');
         }
     }, {
+        key: 'oneItem',
+        value: function oneItem() {
+            if (this.todoListArray.length === 1) {
+                this.resultBox.classList.add('one-item');
+            } else {
+                this.resultBox.classList.remove('one-item');
+            }
+        }
+    }, {
         key: 'isEmptyArray',
         value: function isEmptyArray() {
             return this.todoListArray.length === 0;
@@ -190,11 +229,11 @@ var _ToDoListItem = require('./ToDoListItem.js');
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var defaultOptions = {
-    listTitle: 'Todo List name',
+    listTitle: 'List title',
     inputPlaceholder: 'What needs to be done?...'
 };
 
-var listItemTemplate = '\n    <div class="todo-title-wrap">\n        <input type="text" class="todo-title readonly" readonly>\n        <button class="todo-form__delete-todo-list"></button>\n    </div>\n    <form class="todo-form">\n        <input class="todo-form__input" type="text">\n        <button class="todo-form__btn"></button>\n    </form>\n    <div class="additional-functions">\n        <input class="todo-form__checkbox" type="checkbox">\n        <button class="todo-form__delete-btn"></button>\n    </div> \n    <ul class="todo__items-box"></ul>\n\n';
+var listItemTemplate = '\n    <div class="todo-list__title-wrap">\n        <input class="todo-list__title" type="text" readonly" readonly>\n        <button class="todo-list__delete-todo-list"></button>\n    </div>\n    <ul class="todo-list__todo-list-items"></ul>\n    <form class="todo-list__form">\n        <input class="todo-list__form-input" type="text">\n        <button class="todo-list__form-delete-btn"></button>\n    </form>\n';
 
 /**
  * @param {string} valueValue
@@ -203,35 +242,30 @@ var listItemTemplate = '\n    <div class="todo-title-wrap">\n        <input type
 var ToDoList = exports.ToDoList = function () {
     function ToDoList() {
         var valueValue = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-        var checkboxChecked = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
         _classCallCheck(this, ToDoList);
 
-        this.todoBox = document.createElement('div');
-        this.todoBox.innerHTML = listItemTemplate;
-        this.form = this.todoBox.querySelector('.todo-form');
-        this.listTitle = this.todoBox.querySelector('.todo-title');
-        this.checkbox = this.todoBox.querySelector('.todo-form__checkbox');
-        this.formButton = this.todoBox.querySelector('.todo-form__btn');
-        this.formInput = this.todoBox.querySelector('.todo-form__input');
-        this.formDeleteAllButton = this.todoBox.querySelector('.todo-form__delete-btn');
-        this.itemsBox = this.todoBox.querySelector('.todo__items-box');
-        this.additionalFunctions = this.todoBox.querySelector('.additional-functions');
-        this.deleteTodoListButton = this.todoBox.querySelector('.todo-form__delete-todo-list');
-
+        this.todoList = document.createElement('div');
+        this.todoList.innerHTML = listItemTemplate;
+        // find html elements
+        this.todoListTitle = this.todoList.querySelector('.todo-list__title');
+        this.todoListDeleteBtn = this.todoList.querySelector('.todo-list__delete-todo-list');
+        this.todoListItems = this.todoList.querySelector('.todo-list__todo-list-items');
+        this.form = this.todoList.querySelector('.todo-list__form');
+        this.formInput = this.todoList.querySelector('.todo-list__form-input');
+        this.formDeleteAllButton = this.todoList.querySelector('.todo-list__form-delete-btn');
+        // options
         this.options = Object.assign({}, defaultOptions, options); // merge options
-
-        this.todolistTitle = valueValue || this.options.listTitle;
-        this.checkboxChecked = checkboxChecked;
-
-        this.inputPlaceholder = this.options.inputPlaceholder;
-        this.isListEmpty = true;
-
-        this.listItems = [];
-
+        //state
+        this.todolistTextTitle = valueValue || this.options.listTitle;
+        this.inputTextPlaceholder = this.options.inputPlaceholder;
+        // events
         this.clickDeleteTodoListEvent;
         this.updateStorageEvent;
+        // obj variables
+        this.isListEmpty = true;
+        this.listItems = [];
 
         this.init();
     }
@@ -239,49 +273,28 @@ var ToDoList = exports.ToDoList = function () {
     _createClass(ToDoList, [{
         key: 'init',
         value: function init() {
-            this.todoBox.classList.add('todo');
-            this.checkbox.checked = this.checkboxChecked;
-            this.listTitle.value = this.todolistTitle;
-            this.formInput.placeholder = this.inputPlaceholder;
+            this.todoList.classList.add('todo-list');
+            // set state
+            this.todoListTitle.value = this.todolistTextTitle;
+            this.formInput.placeholder = this.inputTextPlaceholder;
+
             this.initEvents();
         }
     }, {
         key: 'initEvents',
         value: function initEvents() {
-            var _this = this;
-
-            this.formButton.addEventListener('click', function (e) {
-                _this.onClickButtonForm(e);
-            });
-            this.checkbox.addEventListener('click', function (e) {
-                _this.onClickСheckboxForm(e);
-            });
-            this.deleteTodoListButton.addEventListener('click', function (e) {
-                _this.onClickDeleteTodoList(e);
-            });
-            this.formDeleteAllButton.addEventListener('click', function (e) {
-                _this.onClickDeleteAllButton(e);
-            });
-            this.listTitle.addEventListener('input', this.onInputListTitle.bind(this));
-            this.listTitle.addEventListener('dblclick', this.onDblclickListTitle.bind(this.listTitle));
-            this.listTitle.addEventListener('blur', this.onBlurListTitle.bind(this.listTitle));
-            this.listTitle.addEventListener('keydown', this.onKeydownListTitle.bind(this.listTitle));
+            this.todoListDeleteBtn.addEventListener('click', this.onClickDeleteTodoList.bind(this));
+            this.formDeleteAllButton.addEventListener('click', this.onClickDeleteAllButton.bind(this));
+            this.formInput.addEventListener('input', this.onClickButtonForm.bind(this));
+            this.listTitleEvents();
         }
-
-        // Events
-
     }, {
-        key: 'onClick\u0421heckboxForm',
-        value: function onClickHeckboxForm() {
-            var checkboxStete = !this.checkboxChecked ? false : true;
-
-            this.listItems.forEach(function (item) {
-                item.checkboxChecked = checkboxStete;
-                item.onClickCheckbox();
-            });
-
-            this.checkboxChecked = this.checkbox.checked;
-            this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+        key: 'listTitleEvents',
+        value: function listTitleEvents() {
+            this.todoListTitle.addEventListener('input', this.onInputListTitle.bind(this));
+            this.todoListTitle.addEventListener('dblclick', this.onDblclickListTitle.bind(this.todoListTitle));
+            this.todoListTitle.addEventListener('blur', this.onBlurListTitle.bind(this));
+            this.todoListTitle.addEventListener('keydown', this.onKeydownListTitle.bind(this.todoListTitle));
         }
     }, {
         key: 'onKeydownListTitle',
@@ -293,15 +306,16 @@ var ToDoList = exports.ToDoList = function () {
     }, {
         key: 'onBlurListTitle',
         value: function onBlurListTitle(e) {
-            this.readOnly = true;
-            this.classList.add('readonly');
+            this.todoListTitle.readOnly = true;
+            this.todoListTitle.classList.add('readonly');
+            this.todolistTextTitle = this.todoListTitle.value;
+            this.customEventUpdateStorage(this.updateStorageEvent, this.todoList);
         }
     }, {
         key: 'onInputListTitle',
         value: function onInputListTitle(e) {
-            this.todolistTitle = this.listTitle.value;
-            this.createrCustomEvents('listOnInputListTitle', { state: this.state }, this.listTitle);
-            this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+            this.todolistTitle = this.todoListTitle.value;
+            this.createrCustomEvents('listOnInputListTitle', { state: this.state }, this.todoListTitle);
         }
     }, {
         key: 'onDblclickListTitle',
@@ -316,9 +330,9 @@ var ToDoList = exports.ToDoList = function () {
             if (!this.clickDeleteTodoListEvent) {
                 this.customEventClickDeleteTodoList();
             }
-            this.todoBox.dispatchEvent(this.clickDeleteTodoListEvent);
-            this.todoBox.remove();
-            this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
+            this.todoList.dispatchEvent(this.clickDeleteTodoListEvent);
+            this.todoList.remove();
+            this.customEventUpdateStorage(this.updateStorageEvent, this.todoList);
         }
     }, {
         key: 'onClickDeleteAllButton',
@@ -327,30 +341,17 @@ var ToDoList = exports.ToDoList = function () {
 
             if (!this.isEmptyArray()) {
                 this.listItems = [];
-                this.itemsBox.innerHTML = '';
+                this.todoListItems.innerHTML = '';
 
                 this.isListEmpty = false;
-                this.createrCustomEvents('ToDoList.onDeleteAllItems', { state: this.state }, this.todoBox);
-                this.showAdditionalFunctions();
-                this.checkbox.checked = false;
+                this.createrCustomEvents('ToDoList.onDeleteAllItems', { state: this.state }, this.todoList);
             }
-
-            // this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
         }
     }, {
         key: 'onClickButtonForm',
         value: function onClickButtonForm(e) {
-            e.preventDefault();
-
-            if (this.isEmptyInput()) {
-                return alert('Введите текст');
-            }
-
             this.initTodoItem(this.getInputValue());
         }
-
-        // custom Event
-
     }, {
         key: 'customEventClickDeleteTodoList',
         value: function customEventClickDeleteTodoList() {
@@ -369,9 +370,6 @@ var ToDoList = exports.ToDoList = function () {
 
             dispatchElement.dispatchEvent(objElement);
         }
-
-        // ***
-
     }, {
         key: 'createTodoItem',
         value: function createTodoItem(valueValue, checkboxChecked) {
@@ -383,15 +381,13 @@ var ToDoList = exports.ToDoList = function () {
     }, {
         key: 'onClickCloseIconTodoItem',
         value: function onClickCloseIconTodoItem(item, e) {
-            var _this2 = this;
+            var _this = this;
 
             this.listItems.forEach(function (arrayItem, i) {
                 if (arrayItem === item) {
-                    return _this2.listItems.splice(i, 1);
+                    return _this.listItems.splice(i, 1);
                 }
             });
-
-            this.showAdditionalFunctions();
         }
     }, {
         key: 'createrCustomEvents',
@@ -408,25 +404,17 @@ var ToDoList = exports.ToDoList = function () {
         value: function initTodoItem(valueValue, checkboxChecked) {
             var item = this.createTodoItem(valueValue, checkboxChecked);
             this.addTodoItem(item);
-            this.showAdditionalFunctions();
-            this.itemsBox.scrollTop = this.itemsBox.scrollHeight;
+            this.todoListItems.scrollTop = this.todoListItems.scrollHeight;
+            item.input.focus();
+            this.formInput.value = '';
         }
     }, {
         key: 'addTodoItem',
         value: function addTodoItem(item) {
             this.listItems.push(item);
-            this.itemsBox.appendChild(item.getListItem());
+            this.todoListItems.appendChild(item.getListItem());
 
-            this.customEventUpdateStorage(this.updateStorageEvent, this.todoBox);
-        }
-    }, {
-        key: 'showAdditionalFunctions',
-        value: function showAdditionalFunctions() {
-            if (this.listItems.length > 0) {
-                this.additionalFunctions.classList.add('visible');
-            } else {
-                this.additionalFunctions.classList.remove('visible');
-            }
+            this.customEventUpdateStorage(this.updateStorageEvent, this.todoList);
         }
     }, {
         key: 'getInputValue',
@@ -446,12 +434,12 @@ var ToDoList = exports.ToDoList = function () {
     }, {
         key: 'getTodoList',
         value: function getTodoList() {
-            return this.todoBox;
+            return this.todoList;
         }
     }, {
         key: 'getVisible',
         value: function getVisible() {
-            this.todoBox.classList.add('visible');
+            this.todoList.classList.add('visible');
         }
     }]);
 
@@ -469,7 +457,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ToDoListItemTemplate = '\n    <input type="checkbox" class="todo-item__checkbox">\n    <input class="todo-item__input">\n    <i class="todo-item__close-icon"></i>\n';
+var ToDoListItemTemplate = '\n    <label class="todo-list-item__checkbox-lable">\n        <input class="todo-list-item__checkbox" type="checkbox">\n    </label>\n    <input class="todo-list-item__input" id="todo-list-item__input">\n    <i class="todo-list-item__close-btn"></i>\n';
 
 /**
  * @param  {string} value - The name of the item being created
@@ -485,17 +473,18 @@ var ToDoListItem = exports.ToDoListItem = function () {
 
         this.itemBox = document.createElement('li');
         this.itemBox.innerHTML = ToDoListItemTemplate;
-        this.checkbox = this.itemBox.querySelector('.todo-item__checkbox');
-        this.input = this.itemBox.querySelector('.todo-item__input');
-        this.closeBtn = this.itemBox.querySelector('.todo-item__close-icon');
-
+        // find html elements
+        this.checkbox = this.itemBox.querySelector('.todo-list-item__checkbox');
+        this.input = this.itemBox.querySelector('.todo-list-item__input');
+        this.closeBtn = this.itemBox.querySelector('.todo-list-item__close-btn');
+        this.checkboxLabel = this.itemBox.querySelector('.todo-list-item__checkbox-lable');
+        // state
         this.valueValue = valueValue;
         this.checkboxChecked = checkboxChecked;
-
+        // events
         this.closeIconEvent;
         this.updateStorageEvent;
         this.inputEntryFieldEvent;
-        this.checkboxEvent;
 
         this.init();
     }
@@ -503,25 +492,38 @@ var ToDoListItem = exports.ToDoListItem = function () {
     _createClass(ToDoListItem, [{
         key: 'init',
         value: function init() {
-            this.itemBox.classList.add('todo-item');
+            this.itemBox.classList.add('todo-list-item');
             this.input.value = this.valueValue;
             this.checkbox.checked = this.checkboxChecked;
-            if (this.checkboxChecked) {
-                this.input.classList.add('completed');
-            }
 
+            this.toggleCompleted(this.checkboxChecked);
             this.initEvents();
         }
     }, {
         key: 'initEvents',
         value: function initEvents() {
             this.closeBtn.addEventListener('click', this.onClickCloseIcon.bind(this));
-            this.checkbox.addEventListener('click', this.onClickCheckbox.bind(this));
+            this.checkboxLabel.addEventListener('click', this.onClickCheckboxLabel.bind(this));
             this.input.addEventListener('input', this.onInputEntryField.bind(this));
         }
+    }, {
+        key: 'onClickCheckboxLabel',
+        value: function onClickCheckboxLabel(e) {
+            if (e.target === this.checkboxLabel) {
+                this.clickCheckbox();
+            }
+        }
+    }, {
+        key: 'clickCheckbox',
+        value: function clickCheckbox() {
+            console.log(this.toggleCompleted(this.checkbox.checked));
+            this.toggleCompleted(!this.checkbox.checked);
 
-        /* Events */
-
+            if (!this.updateStorageEvent) {
+                this.customEventUpdateLocalStorage();
+            }
+            this.checkbox.dispatchEvent(this.updateStorageEvent);
+        }
     }, {
         key: 'onClickCloseIcon',
         value: function onClickCloseIcon(e) {
@@ -537,24 +539,10 @@ var ToDoListItem = exports.ToDoListItem = function () {
 
             e.target.parentNode.remove();
         }
-    }, {
-        key: 'onClickCheckbox',
-        value: function onClickCheckbox(e) {
-            this.checkboxChecked = !this.checkboxChecked;
-            this.checkbox.checked = this.checkboxChecked;
 
-            if (!this.checkboxEvent) {
-                this.customEventClickCheckbox();
-            }
-            this.checkbox.dispatchEvent(this.checkboxEvent);
+        // onClickCheckbox(e) {
+        // }
 
-            this.toggleCompleted();
-
-            if (!this.updateStorageEvent) {
-                this.customEventUpdateLocalStorage();
-            }
-            this.itemBox.dispatchEvent(this.updateStorageEvent);
-        }
     }, {
         key: 'onInputEntryField',
         value: function onInputEntryField(e) {
@@ -569,20 +557,6 @@ var ToDoListItem = exports.ToDoListItem = function () {
                 this.customEventUpdateLocalStorage();
             }
             this.itemBox.dispatchEvent(this.updateStorageEvent);
-        }
-
-        /* Custom Events */
-
-    }, {
-        key: 'customEventClickCheckbox',
-        value: function customEventClickCheckbox() {
-            this.checkboxEvent = new CustomEvent("todoItemClickCheckbox", {
-                bubbles: true,
-                detail: {
-                    'valueValue': this.valueValue,
-                    'checkboxChecked': this.checkboxChecked
-                }
-            });
         }
     }, {
         key: 'customEventClickCloseIconEvent',
@@ -611,19 +585,19 @@ var ToDoListItem = exports.ToDoListItem = function () {
         value: function customEventUpdateLocalStorage() {
             this.updateStorageEvent = new CustomEvent("updateStorage", {
                 bubbles: true,
-                detail: {
-                    'valueValue': this.valueValue,
-                    'checkboxChecked': this.checkboxChecked
-                }
+                detail: this.checkboxChecked
             });
         }
-
-        /* *** */
-
     }, {
         key: 'toggleCompleted',
-        value: function toggleCompleted() {
-            this.checkbox.checked ? this.input.classList.add('completed') : this.input.classList.remove('completed');
+        value: function toggleCompleted(state) {
+            if (state) {
+                this.itemBox.classList.add('completed');
+            } else {
+                this.itemBox.classList.remove('completed');
+            }
+
+            return this.checkboxChecked = state;
         }
     }, {
         key: 'getListItem',
@@ -640,9 +614,15 @@ var ToDoListItem = exports.ToDoListItem = function () {
 
 var _ToDoBuilder = require('./ToDoBuilder.js');
 
-var todoBuilderInitial = document.getElementById('todo-builder__initial');
-var todoBuilderreturned = document.getElementById('todo-builder__lists-container');
+var todoListContainer = document.getElementById('todo-list-builder__container');
 
-var todoBuilder = new _ToDoBuilder.ToDoBuilder(todoBuilderInitial, todoBuilderreturned);
+var todoBuilder = new _ToDoBuilder.ToDoBuilder(todoListContainer);
+
+window.onscroll = function (e) {
+    var toolbar = document.getElementById('toolbar');
+    var scrolled = window.pageYOffset || document.documentElement.scrollTop;
+
+    scrolled > 1 ? toolbar.classList.add('paper-up') : toolbar.classList.remove('paper-up');
+};
 
 },{"./ToDoBuilder.js":1}]},{},[4]);

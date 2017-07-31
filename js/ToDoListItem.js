@@ -1,7 +1,9 @@
 const ToDoListItemTemplate = `
-    <input type="checkbox" class="todo-item__checkbox">
-    <input class="todo-item__input">
-    <i class="todo-item__close-icon"></i>
+    <label class="todo-list-item__checkbox-lable">
+        <input class="todo-list-item__checkbox" type="checkbox">
+    </label>
+    <input class="todo-list-item__input" id="todo-list-item__input">
+    <i class="todo-list-item__close-btn"></i>
 `;
 
 /**
@@ -12,37 +14,51 @@ export class ToDoListItem {
     constructor(valueValue = '', checkboxChecked = false) {
         this.itemBox = document.createElement('li');
         this.itemBox.innerHTML = ToDoListItemTemplate;
-        this.checkbox = this.itemBox.querySelector('.todo-item__checkbox');
-        this.input = this.itemBox.querySelector('.todo-item__input');
-        this.closeBtn = this.itemBox.querySelector('.todo-item__close-icon');
-
+        // find html elements
+        this.checkbox = this.itemBox.querySelector('.todo-list-item__checkbox');
+        this.input = this.itemBox.querySelector('.todo-list-item__input');
+        this.closeBtn = this.itemBox.querySelector('.todo-list-item__close-btn');
+        this.checkboxLabel = this.itemBox.querySelector('.todo-list-item__checkbox-lable');
+        // state
         this.valueValue = valueValue;
         this.checkboxChecked = checkboxChecked;
-
+        // events
         this.closeIconEvent;
         this.updateStorageEvent;
         this.inputEntryFieldEvent;
-        this.checkboxEvent;
 
         this.init();
     }
 
     init() {
-        this.itemBox.classList.add('todo-item');
+        this.itemBox.classList.add('todo-list-item');
         this.input.value = this.valueValue;
         this.checkbox.checked = this.checkboxChecked;
-        if (this.checkboxChecked) { this.input.classList.add('completed'); }
 
+        this.toggleCompleted( this.checkboxChecked );
         this.initEvents();
+        
     }
 
     initEvents() {
         this.closeBtn.addEventListener('click', this.onClickCloseIcon.bind(this));
-        this.checkbox.addEventListener('click', this.onClickCheckbox.bind(this));
+        this.checkboxLabel.addEventListener('click', this.onClickCheckboxLabel.bind(this));
         this.input.addEventListener('input', this.onInputEntryField.bind(this));
     }
 
-    /* Events */
+    onClickCheckboxLabel(e) {
+        if (e.target === this.checkboxLabel) {
+            this.clickCheckbox();
+        }
+    }
+
+    clickCheckbox() {
+        console.log( this.toggleCompleted(this.checkbox.checked) )
+        this.toggleCompleted(!this.checkbox.checked);
+ 
+        if (!this.updateStorageEvent) { this.customEventUpdateLocalStorage(); }
+        this.checkbox.dispatchEvent(this.updateStorageEvent);
+    }
 
     onClickCloseIcon(e) {
         if (!this.closeIconEvent) { this.customEventClickCloseIconEvent(); }
@@ -54,18 +70,8 @@ export class ToDoListItem {
         e.target.parentNode.remove();
     }
 
-    onClickCheckbox(e) {
-        this.checkboxChecked = !this.checkboxChecked;
-        this.checkbox.checked = this.checkboxChecked;
-
-        if (!this.checkboxEvent) { this.customEventClickCheckbox(); }
-        this.checkbox.dispatchEvent(this.checkboxEvent);
-
-        this.toggleCompleted();
-
-        if (!this.updateStorageEvent) { this.customEventUpdateLocalStorage(); }
-        this.itemBox.dispatchEvent(this.updateStorageEvent);
-    }
+    // onClickCheckbox(e) {
+    // }
 
     onInputEntryField(e) {
         this.valueValue = this.input.value;
@@ -75,18 +81,6 @@ export class ToDoListItem {
 
         if (!this.updateStorageEvent) { this.customEventUpdateLocalStorage(); }
         this.itemBox.dispatchEvent(this.updateStorageEvent);
-    }
-
-    /* Custom Events */
-
-    customEventClickCheckbox() {
-        this.checkboxEvent = new CustomEvent("todoItemClickCheckbox", {
-            bubbles: true,
-            detail: {
-                'valueValue' : this.valueValue,
-                'checkboxChecked' : this.checkboxChecked
-            }
-        });
     }
 
     customEventClickCloseIconEvent() {
@@ -112,15 +106,19 @@ export class ToDoListItem {
     customEventUpdateLocalStorage() {
         this.updateStorageEvent = new CustomEvent("updateStorage", {
             bubbles: true,
-            detail: {
-                'valueValue' : this.valueValue,
-                'checkboxChecked' : this.checkboxChecked
-            }
+            detail: this.checkboxChecked
         });
     }
 
-    /* *** */
+    toggleCompleted(state) { 
+        if (state) {
+            this.itemBox.classList.add('completed');
+        } else {
+            this.itemBox.classList.remove('completed');
+        }
 
-    toggleCompleted() { this.checkbox.checked ? this.input.classList.add('completed') : this.input.classList.remove('completed'); }
+        return this.checkboxChecked = state;
+    }
+
     getListItem() { return this.itemBox; }
 }

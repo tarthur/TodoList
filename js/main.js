@@ -1,7 +1,16 @@
 import { ToDoBuilder } from "./ToDoBuilder.js";
 
 
-let todoBuilderInitial = document.getElementById('todo-builder__initial');
-let todoBuilderreturned = document.getElementById('todo-builder__lists-container');
+let todoListContainer = document.getElementById('todo-list-builder__container');
 
-let todoBuilder = new ToDoBuilder(todoBuilderInitial, todoBuilderreturned);
+let todoBuilder = new ToDoBuilder(todoListContainer);
+
+
+
+
+window.onscroll = function (e) {
+    let toolbar = document.getElementById('toolbar');
+    let scrolled = window.pageYOffset || document.documentElement.scrollTop;
+        
+    scrolled > 1 ? toolbar.classList.add('paper-up') : toolbar.classList.remove('paper-up');
+}

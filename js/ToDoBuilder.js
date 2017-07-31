@@ -1,76 +1,93 @@
 import { ToDoList } from "./ToDoList.js";
 
 
-const toDoBuilderTemplate = `
-    <button class="todo-builder__add-btn">Add new list</button>
-    <button class="todo-builder__clear-btn">Clear</button>
-`;
-
 /**
  * @param {HTMLBlockElement} initialElement
  * @param {HTMLBlockElement} resultBox
  */
 export class ToDoBuilder {
-    constructor(initialElement, resultBox) {
-        this.todoBuilder = initialElement;
-        this.todoBuilder.innerHTML = toDoBuilderTemplate;
-        this.addBtn = this.todoBuilder.querySelector('.todo-builder__add-btn');
-        this.clearBtn = this.todoBuilder.querySelector('.todo-builder__clear-btn');
+    constructor(resultBox) {
+        this.addBtn = document.getElementById('todo-list-builder__add-btn');
+        this.clearBtn = document.getElementById('todo-list-builder__clear-btn');
         this.resultBox = resultBox;
-        this.todoListArray = [];
         this.localStorageArray = null;
+        this.todoListArray = [];
 
         this.init();
     }
 
     init() {
-        let storage = localStorage.getItem('todolist');
+        this.checkLocalStorage();
+        this.initEvents();
+        this.initCustomEvents();
+        this.oneItem();
+    }
 
-        if (storage && storage !== '[]') {
-            storage = JSON.parse(storage);
-            this.buildFromLocalStorage(storage);
+    checkLocalStorage() {
+        let todoBuilderLocalStorage = localStorage.getItem('todoBuilder');
+
+        if (todoBuilderLocalStorage && todoBuilderLocalStorage !== '[]') {
+            todoBuilderLocalStorage = JSON.parse(todoBuilderLocalStorage);
+            this.buildFromLocalStorage(todoBuilderLocalStorage);
         } else {
             this.addTodoList();
         }
-
-        this.initEvents();
     }
 
     initEvents() {
         this.addBtn.addEventListener('click', this.onClickAddBtn.bind(this));
         this.clearBtn.addEventListener('click', this.onClickClearBtn.bind(this));
-        this.resultBox.addEventListener('onClickDeleteTodoList', this.onClickDeleteTodoList.bind(this));
-        this.resultBox.addEventListener('updateStorage', this.updateLocalStorage.bind(this));
-
-        this.resultBox.addEventListener('ToDoListItem.todoItemClickCloseIcon', this.updateLocalStorage.bind(this, 'changeStructure'));
-        this.resultBox.addEventListener('ToDoList.onDeleteAllItems', this.updateLocalStorage.bind(this, 'changeStructure'));
-        this.todoBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
-        this.todoBuilder.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
     }
 
+    initCustomEvents() {
+        this.resultBox.addEventListener('onClickDeleteTodoList', this.onClickDeleteTodoList.bind(this));
+        this.resultBox.addEventListener('updateStorage', this.updateLocalStorage.bind(this));
+        this.resultBox.addEventListener('ToDoListItem.todoItemClickCloseIcon', this.updateLocalStorage.bind(this, 'changeStructure'));
+        this.resultBox.addEventListener('ToDoList.onDeleteAllItems', this.updateLocalStorage.bind(this, 'changeStructure'));
+        this.resultBox.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
+        this.resultBox.addEventListener('ToDoBuilder.addTodoListEvent', this.updateLocalStorage.bind(this, 'changeStructure'));
+    }
 
-    buildFromLocalStorage(storage) {
-        this.todoListArray = [];
-        this.resultBox.innerHTML = '';
+    buildFromLocalStorage(todoBuilderLocalStorage) {
+        this.clearResultBox();
 
-        storage.forEach((tList) => {
-            let toDoList = tList.todoList;
-            let toDoListArr = tList.totoListArr;
-            let list = new ToDoList(toDoList.todolistTitle, toDoList.checkboxChecked);
-
-            this.todoListArray.push(list);
-            this.getVisibleClearBtn();
-
-            toDoListArr.forEach(toDoListItem => {
-                list.initTodoItem(toDoListItem.valueValue, toDoListItem.checkboxChecked);
-            });
-
-            this.resultBox.appendChild(list.getTodoList());
-            list.getVisible()
+        todoBuilderLocalStorage.forEach(todoListObj => {
+            this.buildLocalStorageTodoList(todoListObj);
         });
     }
 
+    buildLocalStorageTodoList(todoListObj) {
+        let toDoList = todoListObj.todoList;
+        let toDoListItems = todoListObj.totoListArr;
+
+        let newTodoList = new ToDoList(toDoList.todolistTextTitle);
+
+        this.todoListArray.push(newTodoList);
+        this.getVisibleClearBtn();
+
+        this.buildLocalStorageTodoListItems(newTodoList, toDoListItems);
+
+        this.resultBox.appendChild(newTodoList.getTodoList());
+        newTodoList.getVisible()
+    }
+
+    buildLocalStorageTodoListItems(toDoList, toDoListItems) {
+        toDoListItems.forEach(toDoListItem => {
+            toDoList.initTodoItem(toDoListItem.valueValue, toDoListItem.checkboxChecked);
+        });
+    }
+
+    clearResultBox() {
+        this.todoListArray = [];
+        this.resultBox.innerHTML = '';
+    }
+
     updateLocalStorage(structure) {
+        this.setLocalStorageData(structure);
+        this.oneItem();
+    }
+
+    setLocalStorageData(structure) {
         if (structure === 'changeStructure' || this.localStorageArray === null) {
             this.localStorageArray = this.todoListArray.map(totoList => {
                 return {
@@ -81,7 +98,8 @@ export class ToDoBuilder {
         }
 
         const newData = JSON.stringify(this.localStorageArray);
-        localStorage.setItem('todolist', newData);
+
+        localStorage.setItem('todoBuilder', newData);
     }
 
 
@@ -97,16 +115,18 @@ export class ToDoBuilder {
     }
 
     onClickClearBtn(e) {
-        this.clear();
-        this.getVisibleClearBtn();
-        this.addTodoList();
-        this.updateLocalStorage('changeStructure');
+        if (e.target === this.clearBtn) {
+            this.clear();
+            this.getVisibleClearBtn();
+            this.addTodoList();
+            this.updateLocalStorage('changeStructure');
+        }
     }
 
     onClickAddBtn(e) {
         this.addTodoList()
         this.customEventAddTodoListEvent();
-        this.updateLocalStorage();
+            this.updateLocalStorage('changeStructure');
         this.getVisibleClearBtn();
     }
 
@@ -115,6 +135,7 @@ export class ToDoBuilder {
         this.todoListArray.push(todoList);
         this.resultBox.appendChild(todoList.getTodoList());
         setTimeout(() => { todoList.getVisible() }, 10)
+        this.oneItem();
     }
 
     customEventAddTodoListEvent() {
@@ -137,6 +158,14 @@ export class ToDoBuilder {
         }
 
         return this.clearBtn.classList.remove('visible');
+    }
+
+    oneItem () {
+        if (this.todoListArray.length === 1) {
+            this.resultBox.classList.add('one-item');
+        } else {
+            this.resultBox.classList.remove('one-item');
+        }
     }
 
     isEmptyArray() { return this.todoListArray.length === 0; }
