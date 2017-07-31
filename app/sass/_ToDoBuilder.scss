@@ -77,20 +77,20 @@
         position: absolute;
         right: 24px;
         opacity: 0;
-        width: 26px;
+        width: 18px;
         border-radius: 50%;
-        padding: 2px;
-        height: 26px;
+        padding: 15px;
+        height: 18px;
         background:  url(../img/delete-button.2.svg) no-repeat 50% 50%;
         // background-color: #eede5e
-        background-size: 50% 50%;
+        background-size: 18px 19px;
         transition: opacity ease-out .2s;
-        margin-top: 4px;
+        margin-top: -5px;
 
         @media (max-width: 640px) {
             & {
                 right: 12px;
-                margin-top: 0;
+                margin-top: -11px;
             }
         }
 
