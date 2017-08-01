@@ -619,10 +619,22 @@ var todoListContainer = document.getElementById('todo-list-builder__container');
 var todoBuilder = new _ToDoBuilder.ToDoBuilder(todoListContainer);
 
 window.onscroll = function (e) {
-    var toolbar = document.getElementById('toolbar');
-    var scrolled = window.pageYOffset || document.documentElement.scrollTop;
+  var toolbar = document.getElementById('toolbar');
+  var scrolled = window.pageYOffset || document.documentElement.scrollTop;
 
-    scrolled > 1 ? toolbar.classList.add('paper-up') : toolbar.classList.remove('paper-up');
+  scrolled > 1 ? toolbar.classList.add('paper-up') : toolbar.classList.remove('paper-up');
 };
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').then(function (registration) {
+      // Registration was successful
+      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    }, function (err) {
+      // registration failed :(
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  });
+}
 
 },{"./ToDoBuilder.js":1}]},{},[4]);
