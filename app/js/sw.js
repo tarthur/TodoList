@@ -1,8 +1,8 @@
 var CACHE_NAME = 'Todo List Creator';
 var urlsToCache = [
   '/',
-  '/css/main.css',
-  '/js/main.js'
+  '/css/common.css',
+  '/js/bundle.js'
 ];
 
 self.addEventListener('install', function(event) {
