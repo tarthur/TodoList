@@ -29,7 +29,7 @@ self.addEventListener('activate', function(event) {
 
 self.addEventListener('fetch', function(event) {
   event.respondWith(
-    caches.open('mysite-dynamic').then(function(cache) {
+    caches.open('app_serviceworker_v_1').then(function(cache) {
       return cache.match(event.request).then(function (response) {
         return response || fetch(event.request).then(function(response) {
           cache.put(event.request, response.clone());
