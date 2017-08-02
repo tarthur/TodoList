@@ -1,0 +1,37 @@
+.toolbar {
+    text-align: center;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    font-size: 20px;
+    letter-spacing: .1em;
+    background: $main_color;
+    @include mat-elevation-2dp;
+    transition: box-shadow ease-out .200s;
+    padding: 18px 0 25px;
+
+    @media (max-width: 640px) {
+        & {
+            padding: 12px 0 18px;
+        }
+    }
+
+    &.paper-up {
+        @include mat-elevation-8dp;
+    }
+
+    &__title {
+        font-family: $font-family_second;
+        display: inline-block;
+        color: #987b47;
+        font-weight: 700;
+        font-size: 25px;
+        margin: 0;
+
+        @media (max-width: 640px) {
+            & {
+                font-size: 20px;
+            }
+        }
+    }
+}
