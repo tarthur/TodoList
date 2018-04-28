@@ -4,4 +4,4 @@
 - In terminal enter `npm i`.
 - In terminal enter `gulp`.
 
-[View the TodoList](http://tarthur.github.io/todo-list/)
+[View the TodoList](http://tarthur.github.io/todoList/)
